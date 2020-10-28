@@ -272,7 +272,7 @@ async def imgSearch(ctx, *args):
 			else:
 				q = str(" ".join(args[:-1])) if(isLast) else str(" ".join(args[1:]))
 		await bing_image(q, n)
-		for x in glob.glob(os.path.join(PATH, + "DB", "img", "ext", q, "Scrapper_*")):
+		for x in glob.glob(os.path.join(PATH, "DB", "img", "ext", q, "Scrapper_*")):
 			try:
 				await ctx.send(file=discord.File(x))
 			except:
