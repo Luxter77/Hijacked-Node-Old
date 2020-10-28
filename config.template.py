@@ -8,7 +8,7 @@ import os
 
 # General
 CommandPrefix = "!"  # Prefix for the Discord commands.
-TOKEN         = r''  # Discord Bot Token; Note: if you try to use a user token you will get that account banned. 
+TOKEN         = r''  # Discord Bot Token; Note: if you try to use a user token you will get that account banned.
 PATH          = os.getcwd()  # Path where the system will deploy
 
 # Admin staff
@@ -45,4 +45,7 @@ WeapList      = ['Emojis', 'Cringe', 'A chainsaw', 'Comnism', 'Capitalism', 'Ana
 EmoteNest     = [[[""],[""]]] # list of iteractions(iteraction(trigger, discord.reaction(emoji).id))
 
 # Why do I keep doing this to myself
-pickle.dump(tuple((CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephLog)), open("Config.pkl", "wb"))
+def saveConfig():
+	pickle.dump(tuple((CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephLog)), open("Config.pkl", "wb"))
+if __main__ == __name__:
+	saveConfig()

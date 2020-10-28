@@ -26,18 +26,30 @@ import sys
 import os
 import re
 
+try:
+	sys.path.append(os.getcwd())
+	import config
+except:
+	try:
+		class CONF0():
+			def __init__(self, conf):
+				self.CommandPrefix, self.TOKEN, self.PATH, self.DevLab, self.LogChan, self.LogAdmin, self.WeapList, self.SUPERUSER, self.UserExLixt, self.ChanExList, self.AllowEmoji, self.GildExList, self.WordExList, self.WordBanLst, self.DayList, self.DayChan, self.EmoteNest, self.StephLog = conf 
+		config = CONF0(tuple(pickle.load(open("config.pkl", "wb"))))	
+	except:
+		print("I can't find configurations, now exiting")
+
+
 # init
-global CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephLog
-CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephLog = pickle.load(open("Config.pkl", "rb"))
-bot = commands.Bot(command_prefix=CommandPrefix, case_insensitive=True)
+#self.CommandPrefix, self.TOKEN, self.PATH, self.DevLab, self.LogChan, self.LogAdmin, self.WeapList, self.SUPERUSER, self.UserExLixt, self.ChanExList, self.AllowEmoji, self.GildExList, self.WordExList, self.WordBanLst, self.DayList, self.DayChan, self.EmoteNest, self.StephLog
+bot = commands.Bot(command_prefix=config.CommandPrefix, case_insensitive=True)
 
 #debug info
 global debugTrigger
 debugTrigger = False # It prints stuff
 
 # I despite this people, but over all, I despite myself
-os.makedirs(os.path.join(PATH, "DB"), exist_ok=True)
-CORPUS_TXT_PATH = os.path.join(PATH, "DB", "corpus.lst")
+os.makedirs(os.path.join(config.PATH, "DB"), exist_ok=True)
+CORPUS_TXT_PATH = os.path.join(config.PATH, "DB", "corpus.lst")
 
 # GLock
 global W_DB, wdict, Dictnry, W_DLOCK, corporae, IsSyncEd
@@ -55,7 +67,7 @@ except:
 
 # GenFuct
 async def EMT(message):
-	for emote in EmoteNest:
+	for emote in config.EmoteNest:
 		for diff in emote[0]:
 			for reply in emote[1]:
 				if(bool(re.search(diff, message.content.lower()))):
@@ -67,20 +79,20 @@ async def logMe(st, err_ = False, tq = True):
 		print(_stderr) if(tq) else tqdm.write(_stderr)
 		print(st) if(tq) else tqdm.write(st)
 		try:
-			for Chan in LogChan:
+			for Chan in config.LogChan:
 				await bot.get_channel(Chan).send('|--------------- ERR_ START ----------------|')
-				await bot.get_channel(Chan).send("<@" + str(LogAdmin[0]) + ">:")
+				await bot.get_channel(Chan).send("<@" + str(config.LogAdmin[0]) + ">:")
 				await bot.get_channel(Chan).send(st)
 				await bot.get_channel(Chan).send('|---------------- ERR_ END -----------------|')
 		except:
 			try:
-				for Chan in LogChan:
+				for Chan in config.LogChan:
 					await bot.get_channel(Chan).send('|--------------- ERR_ START ----------------|')
 					try:
-						await bot.get_channel(Chan).send("<@" + str(LogAdmin[0]) + ">:")
+						await bot.get_channel(Chan).send("<@" + str(config.LogAdmin[0]) + ">:")
 						await bot.get_channel(Chan).send(str(st))
 					except:
-						await bot.get_channel(Chan).send("<@" + str(LogAdmin[0]) + ">:")
+						await bot.get_channel(Chan).send("<@" + str(config.LogAdmin[0]) + ">:")
 						await bot.get_channel(Chan).send("Some unprinteable error happened... ")
 					await bot.get_channel(Chan).send('|---------------- ERR_ END -----------------|')
 			except:
@@ -93,14 +105,14 @@ async def logMe(st, err_ = False, tq = True):
 		_stdout = st
 		print(_stdout) if(tq) else tqdm.write(_stdout)
 		try:
-			for Chan in LogChan:
+			for Chan in config.LogChan:
 				#await bot.get_channel(Chan).send('|--------------- Log_ START ----------------|')
 				await bot.get_channel(Chan).send(st)
 				#await bot.get_channel(Chan).send('|---------------- Log_ END -----------------|')
 
 		except:
 			try:
-				for Chan in LogChan:
+				for Chan in config.LogChan:
 					try:
 						try:
 							await bot.get_channel(Chan).send(st)
@@ -130,9 +142,9 @@ async def long_sleep(arg):
 async def Wednesday():
 	while True:
 		await logMe('|----------- ItsWednesday Start ------------|')
-		tday, tdayImg = DayList[dt.datetime.today.weekday()]
+		tday, tdayImg = config.DayList[dt.datetime.today.weekday()]
 		if(tday):
-			for Chan in DayChan:
+			for Chan in config.DayChan:
 				async with bot.get_channel(Chan).typing():
 					await bot.get_channel(Chan).send(file=discord.File(tdayImg))
 		await logMe('|----------- ItsWednesday End --------------|')
@@ -194,7 +206,7 @@ async def transsBack( cunn, b = True ):
 
 # I shamelessly stole this from _somewhere_ ( and I don't remember where lol)
 async def bing_image(query, delta):
-	os.makedirs(os.path.join(PATH, "DB", "img", "ext", query), exist_ok=True)
+	os.makedirs(os.path.join(config.PATH, "DB", "img", "ext", query), exist_ok=True)
 	sys.setrecursionlimit(10000000)
 	page_counter, link_counter, download_image_delta = 0, 0, 0
 	while (download_image_delta < delta):
@@ -222,7 +234,7 @@ async def bing_image(query, delta):
 					type = "jpg"
 				await logMe("[%] Downloading Image #" + str(download_image_delta) + " from: ```" + str(link) + "```")
 				try:
-					file_path = os.path.join(PATH, "DB", "img", "ext", query, "Scrapper_" + str(download_image_delta) + "." + str(type))
+					file_path = os.path.join(config.PATH, "DB", "img", "ext", query, "Scrapper_" + str(download_image_delta) + "." + str(type))
 					ua = UserAgent(verify_ssl=False)
 					headers = {"User-Agent": ua.random}
 					r = requests.get(link, stream=True, headers=headers)
@@ -272,7 +284,7 @@ async def imgSearch(ctx, *args):
 			else:
 				q = str(" ".join(args[:-1])) if(isLast) else str(" ".join(args[1:]))
 		await bing_image(q, n)
-		for x in glob.glob(os.path.join(PATH, "DB", "img", "ext", q, "Scrapper_*")):
+		for x in glob.glob(os.path.join(config.PATH, "DB", "img", "ext", q, "Scrapper_*")):
 			try:
 				await ctx.send(file=discord.File(x))
 			except:
@@ -282,7 +294,7 @@ async def imgSearch(ctx, *args):
 			except:
 				await logMe("Could'n delete [ " + str(x) + "]", True)
 		try:
-			os.rmdir(os.path.join(PATH, "DB", "img", "ext", q))
+			os.rmdir(os.path.join(config.PATH, "DB", "img", "ext", q))
 		except Exception as e:
 			await logMe(e, True)
 # ----------------------------------------------------------------------------------------------
@@ -304,9 +316,9 @@ async def getLastFrom(ctx):
 
 @bot.command(pass_context = True, hidden=True)
 async def Tree(ctx):
-	if(DevLab):
-		if((ctx.guild == DevLab[0]) or (ctx.author.id in SUPERUSER)):
-			line = str(subprocess.check_output(["tree"] + [] + [PATH], stderr=subprocess.STDOUT).decode(sys.stdout.encoding).strip())
+	if(config.DevLab):
+		if((ctx.guild == config.DevLab[0]) or (ctx.author.id in config.SUPERUSER)):
+			line = str(subprocess.check_output(["tree"] + [] + [config.PATH], stderr=subprocess.STDOUT).decode(sys.stdout.encoding).strip())
 			for x in [line[i:i+1994] for i in range(0, len(line), 1994)]:
 				await ctx.send('```' + x + '```')
 		else:
@@ -321,31 +333,31 @@ async def ReSyncDict(ctx = None, fox = True):
 			await logMe("Updating message database!")
 			msg = await ctx.send("Downloading new messages from Discord server...") if(fox) else None
 			def PPATH( noww ):
-				return(str(os.path.join(PATH, "DB", "parrot."+str(noww.timestamp())+".pkl")))
+				return(str(os.path.join(config.PATH, "DB", "parrot."+str(noww.timestamp())+".pkl")))
 			async def lastTimeR():
 				try:
-					with open(os.path.join(PATH, "DB", "lasttime.pkl"), "rb") as lasttimme:
+					with open(os.path.join(config.PATH, "DB", "lasttime.pkl"), "rb") as lasttimme:
 						return( pickle.load( lasttimme ) )
 				except:
 					await bot.change_presence(activity = discord.Game(name = 'Initializing database...'))
 					return( None )
 			def lastTimeW(noww):
-				with open(os.path.join(PATH, "DB", "lasttime.pkl"), "wb" ) as lasttimme:
+				with open(os.path.join(config.PATH, "DB", "lasttime.pkl"), "wb" ) as lasttimme:
 					pickle.dump( noww, lasttimme )
 			await bot.change_presence(activity = discord.Game(name = 'Updating database...'))
 			noww =  dt.datetime.now()
 			messages_all = []
 			for guild in tqdm(bot.guilds):
-				if(guild.id in GildExList):
+				if(guild.id in config.GildExList):
 					pass
 				await logMe("Now processing: " + str(guild.name) + " (" + str(guild.id) + ")", False, False)
 				for channel in tqdm(guild.text_channels):
-					if( channel.id in ChanExList ):
+					if( channel.id in config.ChanExList ):
 						pass
 					try:
 						await logMe(" - Now Processing: " + str(channel.name) + " (" + str(channel.id) + ")",  False, False)
 						async for message in asynctqdm(channel.history(limit = None, oldest_first = True, after = await lastTimeR())):
-							if( message.type == discord.MessageType.default and not(message.author.id in UserExLixt)):
+							if( message.type == discord.MessageType.default and not(message.author.id in config.UserExLixt)):
 								messages_all.append(message.content)
 					except Exception as err_:
 						await logMe("For some reason I can't access [" + str(channel.id) + "](" + str(channel.name) + ") in [" + str(guild.id) + "](" + str(guild.name) + ")", True, False)
@@ -383,7 +395,7 @@ async def rebuildDict(ctx, fox = True):
 		msg = await ctx.send("Rebuilding Dictionary") if(fox) else None
 		protocorp, outstring = [], ''
 		await msg.edit(content = "Loading Parrot Files...") if(fox) else None
-		for pkl in glob.glob(os.path.join(PATH, "DB", "parrot.*.pkl")):
+		for pkl in glob.glob(os.path.join(config.PATH, "DB", "parrot.*.pkl")):
 			with open( pkl, "rb" ) as pikl:
 				for skala in tqdm( pickle.load( pikl ) ):
 					skala = str(skala).lower()
@@ -395,9 +407,9 @@ async def rebuildDict(ctx, fox = True):
 							skala = skala.replace(BW, '')
 						protocorp.append(skala)										 
 		protocorp = list(str(await transsBack( ( unicodedata.normalize('NFC', "_____".join( protocorp ) ) ), False )).split("_____"))
-		if(StephLog):
+		if(config.StephLog):
 			await msg.edit(content = "Loading STEPH-LOG Files...") if(fox) else None
-			for StephFile in glob.glob(os.path.join(PATH, "DB", "wsp", '*.lst')):
+			for StephFile in glob.glob(os.path.join(config.PATH, "DB", "wsp", '*.lst')):
 				with open(StephFile, "r", encoding="utf-8") as skalafile:
 					for skala in tqdm( skalafile.readlines() ):
 						skala = str(skala).lower()
@@ -418,19 +430,19 @@ async def rebuildDict(ctx, fox = True):
 				if( re.search('jsjs', outstring[x] ) or re.search('jaja', outstring[x] ) ):
 					outstring[x] = 'jajaja'
 			if(len(str(outstring[x])) > 14): del outstring[x]
-		currentmaxcount, tokendic = -1, {}
+		currentmaxcount, config.tokendic = -1, {}
 		open(CORPUS_TXT_PATH, "w", encoding = "utf8").close()
 		with open(CORPUS_TXT_PATH, "a", encoding = "utf8") as oufilestring:
 			for word in tqdm( outstring ):
-				if(word in tokendic):
-					oufilestring.write(str(tokendic[word]) + ' ')
+				if(word in config.tokendic):
+					oufilestring.write(str(config.tokendic[word]) + ' ')
 				else:
 					currentmaxcount = currentmaxcount + 1
-					tokendic[word] = str(currentmaxcount)
-					oufilestring.write(str(tokendic[word]) + ' ')
+					config.tokendic[word] = str(currentmaxcount)
+					oufilestring.write(str(config.tokendic[word]) + ' ')
 		open(CORPUS_TXT_PATH + ".pkl", "w").close()
 		with open(CORPUS_TXT_PATH + ".pkl", "wb") as x:
-			pickle.dump(tokendic, x)
+			pickle.dump(config.tokendic, x)
 		await msg.edit(content = "Database Rebuilded!") if(fox) else None
 		await reloadDict(ctx, fox = fox)
 		IsSyncEd = True
@@ -467,19 +479,19 @@ async def ping(ctx):
 @bot.command(pass_context = True)
 async def punch(ctx, *args):
 	async with ctx.typing():
-		ewap = True if ((ctx.author.id in SUPERUSER) or (ctx.guild.id in DevLab)) else False
+		ewap = True if ((ctx.author.id in config.SUPERUSER) or (ctx.guild.id in config.DevLab)) else False
 		if( bool(re.search("node", ''.join(args)) or bool(re.search(str(bot.user.id), ''.join(args)))) ):
 			await ctx.send("Not gonna happen mate.")
 			return()
 		to = ' '.join(args) if (len(args) > 0) else ctx.author.mention
-		await ctx.send('I obliterate ' + to + ' using: ' + np.random.choice(WeapList) if(ewap) else ('I punch: ' + ' '.join(args) + '.'))
+		await ctx.send('I obliterate ' + to + ' using: ' + np.random.choice(config.WeapList) if(ewap) else ('I punch: ' + ' '.join(args) + '.'))
 
 @bot.command(pass_context = True)
 async def say(ctx, *args):
 	async with ctx.typing():
 		await ctx.send(' '.join(args))
 		await logMe("`` " + str(ctx.author.mention) + " ``: ```" + str(ctx.message.content) + "```")
-		if(ctx.author in SUPERUSER):
+		if(ctx.author in config.SUPERUSER):
 			await ctx.message.delete()
 
 @bot.command(pass_context = True)
@@ -532,7 +544,7 @@ async def on_message(message):
 		await talk(message, True) if ( not(cont.startswith("--")) and not(cont.startswith("/")) and not(cont.startswith("!")) and not(cont.startswith("$")) and bool(re.search("node", cont))) else None
 
 async def doBootUp(): #spagget
-	def sec():
+	async def sec():
 		await logMe( "[ " + str(dt.datetime.now().timestamp()) + " ]" )
 		await logMe( str(bot.user) + " Is connected to:")
 		await logMe('|-------------------------------------------|')
@@ -547,8 +559,8 @@ async def doBootUp(): #spagget
 	await logMe('|Not really an error, but rather an exploit.|', True)
 	await logMe('|-------------------------------------------|')
 	await bot.change_presence(activity = discord.Game(name = 'Waking Up...'))
-	if(LogChan):
-		async with bot.get_channel(LogChan[0]).typing():
+	if(config.LogChan):
+		async with bot.get_channel(config.LogChan[0]).typing():
 			await sec()
 	else:
 		await sec()
@@ -559,4 +571,4 @@ async def doBootUp(): #spagget
 async def on_ready():
 	await doBootUp()
 
-bot.run(TOKEN)
+bot.run(config.TOKEN)
