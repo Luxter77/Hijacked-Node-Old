@@ -45,4 +45,4 @@ WeapList      = ['Emojis', 'Cringe', 'A chainsaw', 'Comnism', 'Capitalism', 'Ana
 EmoteNest     = [[[""],[""]]] # list of iteractions(iteraction(trigger, discord.reaction(emoji).id))
 
 # Why do I keep doing this to myself
-pickle.dump(tuple((CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest)), open("Config.pkl", "wb"))
+pickle.dump(tuple((CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephLog)), open("Config.pkl", "wb"))
