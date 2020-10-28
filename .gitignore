@@ -137,6 +137,6 @@ dmypy.json
 *.txt
 *.lst
 *config.py
-!./requirements.txt
-!./template.configuration.py
-DB/*
+!.*requirements.txt
+!.*template.configuration.py
+.*/DB/*

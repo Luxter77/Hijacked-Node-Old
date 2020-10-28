@@ -27,16 +27,17 @@ import os
 import re
 
 try:
-	sys.path.append(os.getcwd())
-	import config
+	from hijackednode import config
 except:
 	try:
 		class CONF0():
 			def __init__(self, conf):
 				self.CommandPrefix, self.TOKEN, self.PATH, self.DevLab, self.LogChan, self.LogAdmin, self.WeapList, self.SUPERUSER, self.UserExLixt, self.ChanExList, self.AllowEmoji, self.GildExList, self.WordExList, self.WordBanLst, self.DayList, self.DayChan, self.EmoteNest, self.StephLog = conf 
+		global config
 		config = CONF0(tuple(pickle.load(open("config.pkl", "wb"))))	
 	except:
 		print("I can't find configurations, now exiting")
+		sys.exit(1)
 
 
 # init
