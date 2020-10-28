@@ -27,8 +27,8 @@ import os
 import re
 
 # init
-global CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, GildExList, DayList, DayChan, EmoteNest
-CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, GildExList, DayList, DayChan, EmoteNest = pickle.load(open("Config.pkl", "rb"))
+global CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephFile
+CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephFile = pickle.load(open("Config.pkl", "rb"))
 bot = commands.Bot(command_prefix=CommandPrefix, case_insensitive=True)
 
 #debug info
@@ -370,6 +370,15 @@ async def rebuildDict(ctx, fox = True):
 	global IsSyncEd
 	if(IsSyncEd):
 		IsSyncEd = False
+		def chPref(skalaline: str):
+			for BanedWord in PrefBanLst:
+				if(skalaline.startswith(BanedWord)):
+					return(True)
+			return(False)
+		def chLeen(skalaline: str):
+			return(True if ((skalaline.replace( ' ', '' ) ) / len( skalaline.split( ' ' ) ) <= 2) else False)
+		def chEmoj(skalaline: str, ):
+			return(True if (set( skala ).isdisjoint( set( UNICODE_EMOJI ))) else False)
 		await logMe("Rebuilding Dictionary")
 		msg = await ctx.send("Rebuilding Dictionary") if(fox) else None
 		protocorp, outstring = [], ''
@@ -378,29 +387,29 @@ async def rebuildDict(ctx, fox = True):
 			with open( pkl, "rb" ) as pikl:
 				for skala in tqdm( pickle.load( pikl ) ):
 					skala = str(skala).lower()
-					if( len( skala.replace( ' ', '' ) ) / len( skala.split( ' ' ) ) > 2 ):
-						if( not( bool( re.search( "node", skala ) ) ) ):
-							if(skala.startswith("'tts")):
-								skala = skala.replace("'tts ",'')
-							if( not( bool( re.search( "http", skala ) ) or bool( re.search( ".com", skala ) ) or bool( re.search( "pija", skala ) ) or bool( re.search( "asd", skala ) ) or bool( re.search( "aaaaa", skala ) ) or bool( re.search( "puta", skala ) ) or bool( re.search( "puto", skala ) ) or bool( re.search( "lobo", skala ) ) or bool( re.search( "•", skala ) ) or bool( re.search( "<", skala ) ) or bool( re.search( ">", skala ) or bool( re.search( "⣿", skala ) ) or bool( re.search( "http", skala ) ) ) ) ):
-								if( not( skala.startswith( "-" ) or skala.startswith( "`" ) or skala.startswith( "*" ) or skala.startswith( "ch!" ) or skala.startswith( "/" ) or skala.startswith( "!" ) ) ):
-									if( set( skala ).isdisjoint( set( UNICODE_EMOJI ) ) ):
-										protocorp.append(skala)
+					for skalaline in skala:
+						if chPref(skalaline): pass
+						if chLeen(skalaline): pass
+						if chEmoj(skalaline): pass
+						for bBW in [PrefBanLst]:
+							skala = skala.replace(BW, '')
+						protocorp.append(skala)										 
 		protocorp = list(str(await transsBack( ( unicodedata.normalize('NFC', "_____".join( protocorp ) ) ), False )).split("_____"))
-		await msg.edit(content = "Loading STEPH-LOG Files...") if(fox) else None
-		with open(os.path.join(PATH, "DB", "wsp", "filtered.STEPH.en.lst"), "r", encoding="utf-8") as skalafile:
-			for skala in tqdm( skalafile.readlines() ):
-				skala = str(skala).lower()
-				skala = ' '.join(skala.split())
-				if( len( skala.replace( ' ', '' ) ) / len( skala.split( ' ' ) ) > 2 ):
-					if( not( bool( re.search( "node", skala ) ) ) ):
-						if( not( bool( re.search( "http", skala ) ) or bool( re.search( ".com", skala ) ) or bool( re.search( "pija", skala ) ) or bool( re.search( "asd", skala ) ) or bool( re.search( "aaaaa", skala ) ) or bool( re.search( "puta", skala ) ) or bool( re.search( "puto", skala ) ) or bool( re.search( "lobo", skala ) ) or bool( re.search( "•", skala ) ) or bool( re.search( "<", skala ) ) or bool( re.search( ">", skala ) or bool( re.search( "⣿", skala ) ) or bool( re.search( "http", skala ) ) ) ) ):
-							if( not( skala.startswith( "-" ) or skala.startswith( "`" ) or skala.startswith( "*" ) or skala.startswith( "/" ) or skala.startswith( "!" ) ) ):
-								if( set( skala ).isdisjoint( set( UNICODE_EMOJI ) ) ):
-									protocorp.append(skala)
-
+		if(StephLog):
+			await msg.edit(content = "Loading STEPH-LOG Files...") if(fox) else None
+			for StephFile in glob.glob(os.path.join(PATH, "DB", "wsp", '*.lst')):
+				with open(StephFile, "r", encoding="utf-8") as skalafile:
+					for skala in tqdm( skalafile.readlines() ):
+						skala = str(skala).lower()
+						for skalaline in skala:
+							if chPref(skalaline): pass
+							if chLeen(skalaline): pass
+							if chEmoj(skalaline): pass
+							for bBW in [PrefBanLst]:
+								skala = skala.replace(BW, '')
+							protocorp.append(skala)
 		await msg.edit(content = "Prosesing Messages...") if(fox) else None
-		outstring = unicodedata.normalize('NFC', ' '.join(protocorp).replace( '*', '' ).replace( '_', '' ).replace( "(", "" ).replace( ")", "" ).replace( "; ", ";" ).replace( " ;", ";" ).replace( ";", " ; " ).replace( ": ", ":" ).replace( " :", ":" ).replace( ":", " : " ).replace( ", ", "," ).replace( " ,", "," ).replace( ",", " , " ).replace( ". ", "." ).replace( " .", "." ).replace( ".", " . " ).replace( ". . .", "..." ).replace("-", ' ').replace('\n', '. ').replace("  ", " ").replace("  ", " ").replace("  ", " ").replace("  ", " ").replace( '*', '' ).replace( '_', '' ).replace( "(", "" ).replace( "(", ")" ).replace( "; ", ";" ).replace( " ;", ";" ).replace( ";", " ; " ).replace( ": ", ":" ).replace( " :", ":" ).replace( ":", " : " ).replace( ", ", "," ).replace( " ,", "," ).replace( ",", " , " ).replace( ". ", "." ).replace( " .", "." ).replace( ".", " . " ).replace( ". . .", "..." ).replace('. . .', '...').replace('. .', '.') ).split()
+		outstring = unicodedata.normalize('NFC', ' '.join(protocorp).replace( '*', '' ).replace( '_', '' ).replace( "(", "" ).replace( ")", "" ).replace( "; ", ";" ).replace( " ;", ";" ).replace( ";", " ; " ).replace( ": ", ":" ).replace( " :", ":" ).replace( ":", " : " ).replace( ", ", "," ).replace( " ,", "," ).replace( ",", " , " ).replace( ". ", "." ).replace( " .", "." ).replace( ".", " . " ).replace( ". . .", "..." ).replace("-", ' ').replace('\n', '. ').replace("  ", " ").replace("  ", " ").replace("  ", " ").replace("  ", " ").replace( '*', '' ).replace( '_', '' ).replace( "(", "" ).replace( "(", ")" ).replace( "; ", ";" ).replace( " ;", ";" ).replace( ";", " ; " ).replace( ": ", ":" ).replace( " :", ":" ).replace( ":", " : " ).replace( ", ", "," ).replace( " ,", "," ).replace( ",", " , " ).replace( ". ", "." ).replace( " .", "." ).replace( ".", " . " ).replace( ". . .", "..." ).replace('. . .', '...').replace('. .', '.') ).split()	# One heck of a line
 		for x in tqdm( range(len(outstring) - 1, 0, -1) ):
 			try:
 				int(outstring[x])
