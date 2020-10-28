@@ -47,5 +47,5 @@ EmoteNest     = [[[""],[""]]] # list of iteractions(iteraction(trigger, discord.
 # Why do I keep doing this to myself
 def saveConfig():
 	pickle.dump(tuple((CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephLog)), open("Config.pkl", "wb"))
-if __main__ == __name__:
+if __name__ == '__main__':
 	saveConfig()
