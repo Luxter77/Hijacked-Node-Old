@@ -27,8 +27,8 @@ import os
 import re
 
 # init
-global CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephFile
-CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephFile = pickle.load(open("Config.pkl", "rb"))
+global CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephLog
+CommandPrefix, TOKEN, PATH, DevLab, LogChan, LogAdmin, WeapList, SUPERUSER, UserExLixt, ChanExList, AllowEmoji, GildExList, WordExList, WordBanLst, DayList, DayChan, EmoteNest, StephLog = pickle.load(open("Config.pkl", "rb"))
 bot = commands.Bot(command_prefix=CommandPrefix, case_insensitive=True)
 
 #debug info
