@@ -1,0 +1,8 @@
+beautifulsoup4
+discord.py
+emoji
+fake_useragent
+nltk
+numpy
+requests
+tqdm
