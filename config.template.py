@@ -2,6 +2,7 @@
 # coding: utf-8
 
 # I despite this people, but over all, I despite myself
+from base64 import standard_b64decode as de64
 import pickle
 import os
 
@@ -9,7 +10,6 @@ import os
 CommandPrefix = "!"  # Prefix for the Discord commands.
 TOKEN         = r''  # Discord Bot Token; Note: if you try to use a user token you will get that account banned. 
 PATH          = os.getcwd()  # Path where the system will deploy
-
 
 # Admin staff
 DevLab        = []    # Internal use... :shrug: (List of server id's as int)
