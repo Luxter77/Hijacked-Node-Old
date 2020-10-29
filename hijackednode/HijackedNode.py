@@ -377,14 +377,17 @@ async def rebuildDict(ctx, fox = True):
 	if(IsSyncEd):
 		IsSyncEd = False
 		def chPref(skalaline: str):
-			for BanedWord in PrefBanLst:
-				if(skalaline.startswith(BanedWord)):
+			for BND in config.PrefBanLst:
+				if(skalaline.startswith(BND)):
 					return(True)
 			return(False)
 		def chLeen(skalaline: str):
-			return(True if ((skalaline.replace( ' ', '' ) ) / len( skalaline.split( ' ' ) ) <= 2) else False)
-		def chEmoj(skalaline: str, ):
+			return(True if (len(skalaline.replace( ' ', '' )) / len( skalaline.split( ' ' ) ) <= 2) else False)
+		def chEmoj(skalaline: str):
 			return(True if (set( skala ).isdisjoint( set( UNICODE_EMOJI ))) else False)
+		def chWBan(skalaline: str):
+			IB = [True if (set( skalaline.split(' ') ).isdisjoint( set( UNICODE_EMOJI ))) else False]
+			return(IB)
 		await logMe("Rebuilding Dictionary")
 		msg = await ctx.send("Rebuilding Dictionary") if(fox) else None
 		protocorp, outstring = [], ''
@@ -393,13 +396,13 @@ async def rebuildDict(ctx, fox = True):
 			with open( pkl, "rb" ) as pikl:
 				for skala in tqdm( pickle.load( pikl ) ):
 					skala = str(skala).lower()
-					for skalaline in skala:
-						if chPref(skalaline): pass
-						if chLeen(skalaline): pass
-						if chEmoj(skalaline): pass
-						for bBW in [PrefBanLst]:
-							skala = skala.replace(BW, '')
-						protocorp.append(skala)										 
+					if chPref(skala): pass
+					if chLeen(skala): pass
+					if chEmoj(skala): pass
+					if chWBan(skala): pass
+					for EW in config.WordExList:
+						skala = skala.replace(EW, '')
+					protocorp.append(skala)									 
 		protocorp = list(str(await transsBack( ( unicodedata.normalize('NFC', "_____".join( protocorp ) ) ), False )).split("_____"))
 		if(config.StephLog):
 			await msg.edit(content = "Loading STEPH-LOG Files...") if(fox) else None
@@ -407,13 +410,13 @@ async def rebuildDict(ctx, fox = True):
 				with open(StephFile, "r", encoding="utf-8") as skalafile:
 					for skala in tqdm( skalafile.readlines() ):
 						skala = str(skala).lower()
-						for skalaline in skala:
-							if chPref(skalaline): pass
-							if chLeen(skalaline): pass
-							if chEmoj(skalaline): pass
-							for bBW in [PrefBanLst]:
-								skala = skala.replace(BW, '')
-							protocorp.append(skala)
+						if chPref(skala): pass
+						if chLeen(skala): pass
+						if chEmoj(skala): pass
+						if chWBan(skala): pass
+						for EW in config.WordExList:
+							skala = skala.replace(EW, '')
+						protocorp.append(skala)
 		await msg.edit(content = "Prosesing Messages...") if(fox) else None
 		outstring = unicodedata.normalize('NFC', ' '.join(protocorp).replace( '*', '' ).replace( '_', '' ).replace( "(", "" ).replace( ")", "" ).replace( "; ", ";" ).replace( " ;", ";" ).replace( ";", " ; " ).replace( ": ", ":" ).replace( " :", ":" ).replace( ":", " : " ).replace( ", ", "," ).replace( " ,", "," ).replace( ",", " , " ).replace( ". ", "." ).replace( " .", "." ).replace( ".", " . " ).replace( ". . .", "..." ).replace("-", ' ').replace('\n', '. ').replace("  ", " ").replace("  ", " ").replace("  ", " ").replace("  ", " ").replace( '*', '' ).replace( '_', '' ).replace( "(", "" ).replace( "(", ")" ).replace( "; ", ";" ).replace( " ;", ";" ).replace( ";", " ; " ).replace( ": ", ":" ).replace( " :", ":" ).replace( ":", " : " ).replace( ", ", "," ).replace( " ,", "," ).replace( ",", " , " ).replace( ". ", "." ).replace( " .", "." ).replace( ".", " . " ).replace( ". . .", "..." ).replace('. . .', '...').replace('. .', '.') ).split()	# One heck of a line
 		for x in tqdm( range(len(outstring) - 1, 0, -1) ):
