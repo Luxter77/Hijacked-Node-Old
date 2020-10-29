@@ -203,7 +203,7 @@ async def bing_image(query, delta):
 		ua = UserAgent(verify_ssl=False)
 		headers = {"User-Agent": ua.random}
 		payload = (("q", str(query)), ("first", page_counter), ("adlt", False))
-		source = await grequests.get("https://www.bing.com/images/async", params=payload, headers=headers).content
+		source = grequests.get("https://www.bing.com/images/async", params=payload, headers=headers).content
 		soup = BeautifulSoup(str(source).replace('\r', '').replace('\n', ""), "lxml")
 		links = [json.loads(i.get("m").replace('\\', ""))["murl"]
 				 for i in soup.find_all("a", class_="iusc")]
@@ -227,7 +227,7 @@ async def bing_image(query, delta):
 					file_path = os.path.join(config.PATH, "DB", "img", "ext", query, "Scrapper_" + str(download_image_delta) + "." + str(type))
 					ua = UserAgent(verify_ssl=False)
 					headers = {"User-Agent": ua.random}
-					r = await grequests.get(link, stream=True, headers=headers)
+					r = grequests.get(link, stream=True, headers=headers)
 					if(r.status_code == 200):
 						with open(file_path, 'wb') as f:
 							r.raw.decode_content = True
