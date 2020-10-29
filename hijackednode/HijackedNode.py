@@ -25,7 +25,7 @@ except:
 		class CONF0():
 			def __init__(self, conf):
 				self.CommandPrefix, self.TOKEN, self.PATH, self.DevLab, self.LogChan, self.LogAdmin, self.WeapList, self.SUPERUSER, self.UserExLixt, self.ChanExList, self.AllowEmoji, self.GildExList, self.WordExList, self.WordBanLst, self.DayList, self.DayChan, self.EmoteNest, self.StephLog = conf 
-		config = CONF0(tuple(pickle.load(open("config.pkl", "rb"))))	
+		config = CONF0(tuple(pickle.load(open("config.pkl", "rb"))))
 	except Exception as err_:
 		print(err_)
 		traceback.print_exc()
@@ -185,7 +185,7 @@ async def transsBack( cunn, b = True ):
 	if(os.name == 'nt'):
 		return(cunn) # windows bad linux good
 	else:
-		process = await asyncio.create_subprocess_exec("apertium", ["eng-spa" if(b) else "spa-eng", "-u" ], stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=subprocess.PIPE) # fuck pythonic code, all my hommies hate pythonic code - this post was made by the perl gang
+		process = await asyncio.create_subprocess_exec("apertium", ("eng-spa" if(b) else "spa-eng"), "-u", stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=subprocess.PIPE) # fuck pythonic code, all my hommies hate pythonic code - this post was made by the perl gang
 		process.stdin.write( str( cunn ).encode() )
 		conn, err_ = await process.communicate()
 		if(err_): await logMe(err_, True)
