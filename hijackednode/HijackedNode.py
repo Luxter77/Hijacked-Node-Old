@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
+## something something importing ssl multiple times
+from gevent import monkey as curious_george
+curious_george.patch_all(thread=False, select=False)
+import grequests
+
 from tqdm.asyncio import tqdm as asynctqdm
 from fake_useragent import UserAgent
 from discord.ext import commands
@@ -13,10 +18,10 @@ import datetime as dt
 import numpy as np
 import unicodedata, glob, os
 import subprocess, sys, re
-import grequests, pickle
 import traceback, json
 import discord, shutil
 import asyncio, typing
+import pickle
 
 try:
 	from hijackednode import config
