@@ -11,20 +11,12 @@ from tqdm.auto import tqdm
 from pathlib import Path
 import datetime as dt
 import numpy as np
-import unicodedata
-import subprocess
-import traceback
-import requests
-import discord
-import asyncio
-import typing
-import shutil
-import pickle
-import json
-import glob
-import sys
-import os
-import re
+import unicodedata, glob, os
+import subprocess, sys, re
+import traceback, json
+import requests, pickle
+import discord, shutil
+import asyncio, typing
 
 try:
 	from hijackednode import config
