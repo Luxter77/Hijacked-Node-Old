@@ -384,10 +384,9 @@ async def rebuildDict(ctx, fox = True):
 		def chLeen(skalaline: str):
 			return(True if (len(skalaline.replace( ' ', '' )) / len( skalaline.split( ' ' ) ) <= 2) else False)
 		def chEmoj(skalaline: str):
-			return(True if (set( skala ).isdisjoint( set( UNICODE_EMOJI ))) else False)
+			return(True if (set( skalaline ).isdisjoint( set( UNICODE_EMOJI ))) else False)
 		def chWBan(skalaline: str):
-			IB = [True if (set( skalaline.split(' ') ).isdisjoint( set( UNICODE_EMOJI ))) else False]
-			return(IB)
+			return(True if (set( skalaline ).isdisjoint( set( config.WordBanLst ))) else False)
 		await logMe("Rebuilding Dictionary")
 		msg = await ctx.send("Rebuilding Dictionary") if(fox) else None
 		protocorp, outstring = [], ''
@@ -402,8 +401,8 @@ async def rebuildDict(ctx, fox = True):
 					if chWBan(skala): pass
 					for EW in config.WordExList:
 						skala = skala.replace(EW, '')
-					protocorp.append(skala)									 
-		protocorp = list(str(await transsBack( ( unicodedata.normalize('NFC', "_____".join( protocorp ) ) ), False )).split("_____"))
+					protocorp.append(skala)
+		protocorp = [ await transsBack(unicodedata.normalize) for protoline in tqdm(protocorp) ]
 		if(config.StephLog):
 			await msg.edit(content = "Loading STEPH-LOG Files...") if(fox) else None
 			for StephFile in glob.glob(os.path.join(config.PATH, "DB", "wsp", '*.lst')):
