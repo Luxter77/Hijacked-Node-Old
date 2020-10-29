@@ -13,8 +13,8 @@ import datetime as dt
 import numpy as np
 import unicodedata, glob, os
 import subprocess, sys, re
+import grequests, pickle
 import traceback, json
-import requests, pickle
 import discord, shutil
 import asyncio, typing
 
@@ -185,11 +185,10 @@ async def transsBack( cunn, b = True ):
 	if(os.name == 'nt'):
 		return(cunn) # windows bad linux good
 	else:
-		process = await asyncio.create_subprocess_exec( [ "apertium", "eng-spa" if(b) else "spa-eng", "-u" ], stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=subprocess.PIPE ) # fuck pythonic code, all my hommies hate pythonic code - this post was made by the perl gang
-		await process.stdin.write( str( cunn ).encode() )
-		conn, err_ = None, None
+		process = await asyncio.create_subprocess_exec([ "apertium", "eng-spa" if(b) else "spa-eng", "-u" ], stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=subprocess.PIPE).stdin.write( str( cunn ).encode() ) # fuck pythonic code, all my hommies hate pythonic code - this post was made by the perl gang
 		conn, err_ = await process.communicate()
 		if(err_): await logMe(err_, True)
+		del err_
 		conn = conn.decode('utf-8')
 		await process.stdin.close()
 		await process.terminate()
@@ -204,7 +203,7 @@ async def bing_image(query, delta):
 		ua = UserAgent(verify_ssl=False)
 		headers = {"User-Agent": ua.random}
 		payload = (("q", str(query)), ("first", page_counter), ("adlt", False))
-		source = requests.get("https://www.bing.com/images/async", params=payload, headers=headers).content
+		source = await grequests.get("https://www.bing.com/images/async", params=payload, headers=headers).content
 		soup = BeautifulSoup(str(source).replace('\r', '').replace('\n', ""), "lxml")
 		links = [json.loads(i.get("m").replace('\\', ""))["murl"]
 				 for i in soup.find_all("a", class_="iusc")]
@@ -228,7 +227,7 @@ async def bing_image(query, delta):
 					file_path = os.path.join(config.PATH, "DB", "img", "ext", query, "Scrapper_" + str(download_image_delta) + "." + str(type))
 					ua = UserAgent(verify_ssl=False)
 					headers = {"User-Agent": ua.random}
-					r = requests.get(link, stream=True, headers=headers)
+					r = await grequests.get(link, stream=True, headers=headers)
 					if(r.status_code == 200):
 						with open(file_path, 'wb') as f:
 							r.raw.decode_content = True
@@ -399,7 +398,7 @@ async def rebuildDict(ctx, fox = True):
 					for EW in config.WordExList:
 						skala = skala.replace(EW, '')
 					protocorp.append(skala)
-		protocorp = [ await transsBack(unicodedata.normalize(protoline)) for protoline in tqdm(protocorp) ]
+		protocorp = [ await transsBack(unicodedata.normalize('NFC', protoline)) for protoline in tqdm(protocorp) ]
 		if(config.StephLog):
 			await msg.edit(content = "Loading STEPH-LOG Files...") if(fox) else None
 			for StephFile in glob.glob(os.path.join(config.PATH, "DB", "wsp", '*.lst')):
