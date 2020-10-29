@@ -399,7 +399,7 @@ async def rebuildDict(ctx, fox = True):
 					for EW in config.WordExList:
 						skala = skala.replace(EW, '')
 					protocorp.append(skala)
-		protocorp = [ await transsBack(unicodedata.normalize) for protoline in tqdm(protocorp) ]
+		protocorp = [ await transsBack(unicodedata.normalize(protoline)) for protoline in tqdm(protocorp) ]
 		if(config.StephLog):
 			await msg.edit(content = "Loading STEPH-LOG Files...") if(fox) else None
 			for StephFile in glob.glob(os.path.join(config.PATH, "DB", "wsp", '*.lst')):
