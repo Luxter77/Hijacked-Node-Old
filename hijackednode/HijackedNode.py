@@ -185,17 +185,14 @@ async def transsBack( cunn, b = True ):
 	if(os.name == 'nt'):
 		return(cunn) # windows bad linux good
 	else:
-		process = subprocess.Popen( [ "apertium", "eng-spa" if(b) else "spa-eng", "-u" ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE ) # fuck pythonic code, all my hommies hate pythonic code - this post was made by the perl gang
-		if(debugTrigger):
-			await logMe(str(cunn))
-		process.stdin.write( str( cunn ).encode() )
+		process = await asyncio.create_subprocess_exec( [ "apertium", "eng-spa" if(b) else "spa-eng", "-u" ], stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=subprocess.PIPE ) # fuck pythonic code, all my hommies hate pythonic code - this post was made by the perl gang
+		await process.stdin.write( str( cunn ).encode() )
 		conn, err_ = None, None
-		conn, err_ = process.communicate()
-		await logMe(conn.decode('utf-8'))
-		await logMe(err_.decode('utf-8'), True) if(err_) else None
+		conn, err_ = await process.communicate()
+		if(err_): await logMe(err_, True)
 		conn = conn.decode('utf-8')
-		process.stdin.close()
-		process.terminate()
+		await process.stdin.close()
+		await process.terminate()
 		return( conn )
 
 # I shamelessly stole this from _somewhere_ ( and I don't remember where lol)
