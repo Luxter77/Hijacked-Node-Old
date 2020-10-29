@@ -1,8 +1,6 @@
-beautifulsoup4
+tqdm
+fake_useragent
+grequests
+numpy
 discord.py
 emoji
-fake_useragent
-nltk
-numpy
-requests
-tqdm
