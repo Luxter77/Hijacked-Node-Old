@@ -7,3 +7,5 @@ It uses markov chains to generate new sentecnes every time its mentioned, I made
 It's a lot of spaggeti crying to be reworked
 
 REQUIRES: `apertium-es-en` and `apertium-en-es` from apertium [release](https://wiki.apertium.org/wiki/Install_Apertium_core_using_packaging)
+
+Its broken until I fix it, or you do
