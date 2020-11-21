@@ -1,28 +1,26 @@
-from types import NoneType
+'''TheEyeLoop said to me if I where to do something like this it would be funny.\n
+I, of course, did instantly hiperfixated and did it.
+This was a mistake.'''
 
-class WhatTheHay(set): pass
-class NONONONONONONONONONONONO(NoneType):
-    __init__(*args, **kargs):
-        super.__init__(*args, **kargs) # Can you imagine how much does this line amuses me?
+# :(
 
-def MyFriendThougtThisWouldBeFunnySoHereWeAre():
-    ''' TheEyeLoop said to me if I where to do something like this it would be funny.\n
-    I, of course, did instantly hiperfixated and did it.'''
-    def why_would_you_do_something_like_this_you_absolute_(self, unit: NoneType,
-                                                       downstream: NONONONONONONONONONONONO
-                                                       ) -> WhatTheHay:
-        '''
-        #You may be asking now:
-        #    Luxter, why the hug did you make this into a class instead of a recursive function
-        #I anwser:
-        #    You expect too much out of this dumpster fire of a module.
-        UPDATE: hug you Loop
-        '''
-        for x in downstream:
-            for y in (x.__subclasses__()):
-                for z in y:
-                    _.add(z)
-        try:
-            _ = self.why_would_you_do_something_like_this_you_absolute_(downstream=_)
-        except:
-            return(_)
+
+def why_would_you_do_something_like_this_you_absolute_(downstream: list) -> list:
+    '''
+    # You may be asking now:
+    #    Luxter, why the hug did you make this into a class instead of a recursive function
+    # I anwser:
+    #    You expect too much out of this dumpster fire of a module.
+    UPDATE: hug you Loop
+    UPDATE: THIS IS HARDER THAN IT LOOKS
+    UPDATE: IT TOOK ME ALL NIGHT BUT I DID IT! self.laugh_maniatically()
+    '''
+    outstream = []
+    for x in downstream:
+        if(x.__subclasses__()):
+            outstream += why_would_you_do_something_like_this_you_absolute_(downstream=x.__subclasses__())
+        outstream.append(x)
+    return(outstream)
+    # IN THE END IT WAS SO SIMPLE WHY THE HUG DID I OVERCOMPLICATE MYSELF ALL THE WAY ONTO HELL
+
+print(set(why_would_you_do_something_like_this_you_absolute_(set([BaseException]))))
