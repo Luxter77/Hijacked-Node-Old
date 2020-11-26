@@ -5,7 +5,7 @@ This was a mistake.'''
 # :(
 
 
-def why_would_you_do_something_like_this_you_absolute_(downstream: list) -> list:
+def why_would_you_do_something_like_this_you_absolute_(downstream: list) -> set:
     '''
     # You may be asking now:
     #    Luxter, why the hug did you make this into a class instead of a recursive function
@@ -18,9 +18,9 @@ def why_would_you_do_something_like_this_you_absolute_(downstream: list) -> list
     outstream = []
     for x in downstream:
         if(x.__subclasses__()):
-            outstream += why_would_you_do_something_like_this_you_absolute_(downstream=x.__subclasses__())
+            outstream += list(why_would_you_do_something_like_this_you_absolute_(downstream=x.__subclasses__()))
         outstream.append(x)
-    return(outstream)
+    return(set(outstream))
     # IN THE END IT WAS SO SIMPLE WHY THE HUG DID I OVERCOMPLICATE MYSELF ALL THE WAY ONTO HELL
 
-print(set(why_would_you_do_something_like_this_you_absolute_(set([BaseException]))))
+print(why_would_you_do_something_like_this_you_absolute_([BaseException]))
