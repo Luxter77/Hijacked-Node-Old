@@ -1,10 +1,18 @@
+import subprocess
+import asyncio
+import os
+
+import numpy as np
+
+from hijackednode.configuration import CONF0
+from hijackednode import tqdm
 class TalkBox:
     'This is where the magic happens'
-    def __init__(self.config: CONF0):
-        pass 
+    def __init__(self, config: CONF0):
 
-os.makedirs(os.path.join(config.PATH, "DB"), exist_ok=True)
-CORPUS_TXT_PATH = os.path.join(config.PATH, "DB", "corpus.lst")
+        self.CORPUS_TXT_PATH = os.path.join(config.PATH, "corpus.lst")
+        os.makedirs(os.path.join(config.PATH, "DB"), exist_ok=True)
+
 
 # GLock
 global W_DB, wdict, Dictnry, W_DLOCK, corporae, IsSyncEd
@@ -85,4 +93,4 @@ async def transsBack(cunn, b=True):
         conn = conn.decode("utf-8")
         await process.stdin.close()
         await process.terminate()
-        return conn
+        return(conn)

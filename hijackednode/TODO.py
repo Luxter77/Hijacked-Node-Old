@@ -1,5 +1,13 @@
+import datetime as dt
+import discord
+import asyncio
+import re
+import os
+
+from hijackednode.configuration import CONF0
+
 # GenFuct
-async def EMT(message):
+async def EMT(message: discord.Message, config: CONF0):
     for emote in config.EmoteNest:
         for diff in emote[0]:
             for reply in emote[1]:
@@ -22,16 +30,11 @@ async def long_sleep(arg):
         task.cancel()
 
 
-async def Wednesday():
+async def Wednesday(config: CONF0, bot: discord.ext.commands.Bot):
     while True:
-        await logMe("|----------- ItsWednesday Start ------------|")
-        tday, tdayImg = config.DayList[dt.datetime.today.weekday()]
+        tday, tdayImg = config.DailyDict[dt.datetime.today.weekday()]
         if tday:
-            for Chan in config.DayChan:
+            for Chan in config.DailyChan:
                 async with bot.get_channel(Chan).typing():
                     await bot.get_channel(Chan).send(file=discord.File(tdayImg))
-        await logMe("|----------- ItsWednesday End --------------|")
-        await logMe("|>---------- Now Waiting a day ------------<|")
         await long_sleep(60 * 60 * 24)
-
-

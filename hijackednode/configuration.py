@@ -1,127 +1,134 @@
-from base64 import standard_b64decode as de64
-from discord import discord_Emoji
+from typing import Union, List, Set
+from collections import NamedTuple, UserDict
+
 import random
+import pickle
+import os
 
-# spoilers, its not funny
-from hijackednode.funny import Pain
+from base64 import standard_b64decode as de64
+from discord import User, TextChannel, Guild, discord_Emoji
 
-# Why do I keep doing this to myself
-def saveConfig():
-    try:
-        pickle.dump(
-            (
-                CommandPrefix,
-                TOKEN,
-                PATH,
-                DevLab,
-                LogChan,
-                LogAdmin,
-                WeapList,
-                SUPERUSER,
-                UserExLixt,
-                ChanExList,
-                AllowEmoji,
-                GildExList,
-                WordExList,
-                WordBanLst,
-                DayList,
-                DayChan,
-                EmoteNest,
-                StephLog,
-            ),
-            open("Config.pkl", "wb"),
-        )
-    except Exception:
-        IAmIn = Pain(BaseException)  # Hug you Loop
+from hijackednode.funny import Pain  # spoilers, its not funny
 
+if(os.name == "nt"):
+    import ctypes.wintypes
+else:
+    import subprocess
 
 def _get_def_doc() -> str:
     "Get Documents folder"
-    if os.name == "nt":
-        import ctypes.wintypes
-
+    if(os.name == "nt"):
         buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
         ctypes.windll.shell32.SHGetFolderPathW(None, 5, None, 0, buf)
-        return str(buf.value)
+        return(str(buf.value))
     else:
-        import subprocess
-
-        return subprocess.check_output(
+        return(subprocess.check_output(
             ["xdg-user-dir", "DOCUMENTS"], universal_newlines=True
-        ).strip()
+        ).strip())
 
-
-""" I'm unstoppable\n
-I'm a Porsche with no brakes\n
-I'm invincible\n
-Yeah, I win every single game\n
-I'm so powerful\n
-I don't need batteries to play\n
-I'm so confident, yeah, I'm unstoppable today\n
-Unstoppable today, unstoppable today\n
-Unstoppable today, yeah, I'm unstoppable today\n
-Unstoppable today, unstoppable today\n
-Unstoppable today, yeah, I'm unstoppable today\n"""
-
-LogToFile = False
-AllowEmoji = False
-
-# Absolutely nessesary
-CommandPrefix: str = "!"
-TOKEN: str = ""
-PATH: str = os.path.join(_get_def_doc(), "Hijacked-Node")
-StephLog: str = ""
-
-# Mix configs
-DevLab: (list, str, set) = set()
-LogChan: (list, str, set) = set()
-LogAdmin: (list, str, set) = set()
-SUPERUSER: (list, str, set) = set()
-UserExLixt: (list, str, set) = set()
-ChanExList: (list, str, set) = set()
-GildExList: (list, str, set) = set()
-WordExList: (list, str, set) = set()
-WordBanLst: (list, str, set) = set()
-DayList: (list, str, set) = set()
-DayChan: (list, str, set) = set()
-EmoteNest: (list, str, set) = set()
-
-DayDict = {
-    "We": os.path.join(PATH, "db", "img", "W.png"),
-    "Th": os.path.join(PATH, "db", "img", "J.gif"),
-    "Fr": os.path.join(PATH, "db", "img", "V.jpg"),
-    "Sa": None,
-    "Su": None,
-    "Mo": None,
-    "Tu": None,
-}
-
-WeapList = set(
-    "Emojis",
-    "Cringe",
-    "A chainsaw",
-    "Comnism",
-    "Capitalism",
-    "Anarchism",
-    "Memes",
-    "An informatic virus",
-    "Yo' mama",
-    "The BFG",
-    "It's own guts",
-    "My bare fists",
-    "Extraneous furry imagery",
-    "An orbital strike",
-    "A rocket launcher",
-    "A specially annoying kid with aspergers",
-    "An assault rifle",
-    "A Heaby machinegun",
-    "It's own arms",
-    "A nuclear bomb",
-    "Puppies",
-    "javascript",
-    "Oracle®",
-    "EvilCorp",
-    "literally me",
-    "A giantic book",
-    "the power of God and anime",
+_WeapList = set(
+    "Emojis", "Cringe", "A chainsaw", "Comnism", "Capitalism", "Anarchism",
+    "Memes", "An informatic virus", "Yo' mama", "The BFG", "It's own guts",
+    "My bare fists", "A giantic book", "Extraneous furry imagery",
+    "An orbital strike", "Oracle®", "A rocket launcher",
+    "A specially annoying kid with aspergers", "An assault rifle",
+    "A Heaby machinegun", "It's own arms", "A nuclear bomb", "Puppies",
+    "javascript", "EvilCorp", "literally me", "the power of God and anime"
 )
+
+_PATH = os.path.join(_get_def_doc(), "Hijacked-Node")
+
+_TreeDir = [
+    'img',
+    'txt',
+    'wsp',
+]
+
+EmoteNestType = List[List[str, Union[str, discord_Emoji]]]
+DiscordChannelType = Set[Union[str, int, TextChannel]]
+DiscordGuildType = Set[Union[str, int, Guild]]
+DiscrodUserType = Set[Union[str, int, User]]
+WeapListType = Union[Set[str], List[str]]
+WordsType = Set[str]
+class dayCheckType(NamedTuple):
+    check: bool
+    fle: str
+    dint: int
+
+class DailyDictType(UserDict):
+    We: dayCheckType  # os.path.join(PATH, "db", "img", "We.png"),
+    Th: dayCheckType  # os.path.join(PATH, "db", "img", "Jh.gif"),
+    Fr: dayCheckType  # os.path.join(PATH, "db", "img", "Fr.jpg"),
+    Sa: dayCheckType  # os.path.join(PATH, "db", "img", "Sa.jpg"),
+    Su: dayCheckType  # os.path.join(PATH, "db", "img", "Su.jpg"),
+    Mo: dayCheckType  # os.path.join(PATH, "db", "img", "Mo.jpg"),
+    Tu: dayCheckType  # os.path.join(PATH, "db", "img", "Tu.jpg"),
+
+class CONF0():
+    'Unified Configuration Object'
+    # Please update here too if you modify parameters
+    __params__ = [
+        'TOKEN', 'DevLab', 'LogChan', 'LogAdmin', 'SUPERUSER', 'UserExLixt',
+        'ChanExList', 'GildExList', 'WordExList', 'WordBanLst', 'DailyDict',
+        'DailyChan', 'EmoteNest', 'CommandPrefix', 'PATH', 'LogToFile',
+        'AllowEmoji', 'WeapList'  # , 'StephLog',
+    ]
+
+    def __init__(self,
+                 TOKEN: str = False,
+                 DevLab: DiscordGuildType = set(),
+                 LogChan: DiscordChannelType = set(),
+                 LogAdmin: DiscrodUserType = set(),
+                 SUPERUSER: DiscrodUserType = set(),
+                 UserExLixt: DiscrodUserType = set(),
+                 ChanExList: DiscordChannelType = set(),
+                 GildExList: DiscordGuildType = set(),
+                 WordExList: WordsType = set(),
+                 WordBanLst: WordsType = set(),
+                 DailyDict: DailyDictType = set(),
+                 DailyChan: DiscordChannelType = set(),
+                 EmoteNest: EmoteNestType = set(),
+                 CommandPrefix: str = "!",
+                 PATH: str = _PATH,
+                 LogToFile: bool = False,
+                 AllowEmoji: bool = False,
+                 WeapList: WeapListType = _WeapList,
+                 DoLoadFile: bool = True,
+                 # StephLog: type
+                 ):
+        try:
+            self.load(path=self.PATH)
+        except Exception:
+            self.TOKEN = TOKEN
+            self.DevLab = DevLab
+            self.LogChan = LogChan
+            self.LogAdmin = LogAdmin
+            self.SUPERUSER = SUPERUSER
+            self.UserExLixt = UserExLixt
+            self.ChanExList = ChanExList
+            self.GildExList = GildExList
+            self.WordExList = WordExList
+            self.WordBanLst = WordBanLst
+            self.DailyDict = DailyDict
+            self.DailyChan = DailyChan
+            self.EmoteNest = EmoteNest
+            self.CommandPrefix = CommandPrefix
+            self.PATH = PATH
+            self.LogToFile = LogToFile
+            self.AllowEmoji = AllowEmoji
+            self.WeapList = WeapList
+            # self.StephLog = StephLog
+        for x in _TreeDir:
+            os.makedirs(os.path.join(self.PATH, x), exist_ok=True)
+
+    def save(self):
+        try:
+            pickle.dump(self, open(os.path.join(self.PATH, "Config.pkl"), "wb"))
+        except Exception:
+            Pain(BaseException)  # Hug you Loop
+
+    def load(self):
+        try:
+            self = pickle.load(open(os.path.join(self.PATH, "Config.pkl"), "rb"))
+        except Exception:
+            Pain(BaseException)  # Hug you Loop
