@@ -29,7 +29,8 @@ WARNING! ONLY LVL40+ SPAGHETTI COOKS ALLOWED FROM HERE ON OUT ON THIS FILE
 class TalkBox:
     'This is where the magic happens'
 
-    __thingamagins__ = ['W_DB', 'wdict', 'Dictnry', 'W_DLOCK', 'corporae', 'IsSyncEd']
+    __thingamagins__ = ['W_DB', 'wdict', 'Dictnry',
+                        'W_DLOCK', 'corporae', 'IsSyncEd']
     sync_lock = asyncio.Lock()
 
     def __init__(self, config: CONF0, bot: Bot, logMe: LogMe):
@@ -40,7 +41,8 @@ class TalkBox:
         self.wdict = self.Dictnry = self.W_DB = dict()
         try:
             self.corpus_file = os.path.join(self.config.PATH, "corpus.lst")
-            self.corpus = open(self.corpus_file, encoding="utf8").read().split(" ")
+            self.corpus = open(
+                self.corpus_file, encoding="utf8").read().split(" ")
             self.wdict = pickle.load(open(self.corpus_file + ".pkl", "rb"))
             for k, v in tqdm(self.wdict.items()):
                 self.Dictnry[v] = k
@@ -58,13 +60,20 @@ class TalkBox:
 
     def chPref(self, skalaline: str):
         for start in self.config.PrefBanLst:
-            if(skalaline.startswith(start)): return(True)
+            if(skalaline.startswith(start)):
+                return(True)
+
     def chLeen(self, skalaline: str):
-        if (len(skalaline.replace(" ", "")) / len(skalaline.split(" ")) <= 2): return(True)
+        if (len(skalaline.replace(" ", "")) / len(skalaline.split(" ")) <= 2):
+            return(True)
+
     def chEmoj(self, skalaline: str):
-        if (set(skalaline).isdisjoint(set(UNICODE_EMOJI))): return(True)
+        if (set(skalaline).isdisjoint(set(UNICODE_EMOJI))):
+            return(True)
+
     def chWBan(self, skalaline: str):
-        if (set(skalaline).isdisjoint(set(self.config.WordBanLst))): return(True)
+        if (set(skalaline).isdisjoint(set(self.config.WordBanLst))):
+            return(True)
 
     async def gen_text(self, llen: int = None, init: str = None, formated: bool = False) -> str:
         if not(self.sync_lock.locked()):
@@ -107,7 +116,8 @@ class TalkBox:
     async def build_chain(self, fromFile: bool = True):
         async with self.sync_lock:
             if(fromFile):
-                self.corpus = open(self.corpus_file, encoding="utf8").read().split(" ")
+                self.corpus = open(
+                    self.corpus_file, encoding="utf8").read().split(" ")
             W_D = dict()
             for W1, W2 in tqdm(self._make_pairs(corpus=self.corpus)):
                 if W1 in W_D.keys():
@@ -184,7 +194,7 @@ class TalkBox:
                 pickle.dump(messages_all, parrot_pkl)
             self.lastTimeW(noww)
         await self.rebuild_dictionary()
-    
+
     async def rebuild_dictionary(self):
         async with self.sync_lock:
             await self.logMe("Rebuilding Dictionary")
@@ -214,7 +224,8 @@ class TalkBox:
                             protocorp.append(skala)
             outstring = unicodedata.normalize(
                 "NFC",
-                " ".join(protocorp).replace("*", "").replace("_", "").replace("(", "")
+                " ".join(protocorp).replace(
+                    "*", "").replace("_", "").replace("(", "")
                 .replace(")", "").replace("; ", ";").replace(" ;", ";").replace(";", " ; ")
                 .replace(": ", ":").replace(" :", ":").replace(":", " : ").replace(", ", ",")
                 .replace(" ,", ",").replace(",", " , ").replace(". ", ".").replace(" .", ".")
@@ -253,5 +264,6 @@ class TalkBox:
             self.Dictnry = {v: k for k, v in tokendic.items()}
             await self.bot.change_presence(activity=Game(name="Complex Numbers"))
         await self.build_chain(fromFile=False)
+
 
 talkbox = None

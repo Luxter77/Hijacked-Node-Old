@@ -128,16 +128,19 @@ async def Tree(ctx: Context):
 
 @bot.command(pass_context=True)
 async def ReSyncDict(ctx: Context):
+    global talkbox
     await talkbox.pull_messages()
 
 
 @bot.command(pass_context=True)
 async def rebuildDict(ctx: Context):
+    global talkbox
     await talkbox.rebuild_dictionary()
 
 
 @bot.command(pass_context=True)
 async def reloadDict(ctx: Context):
+    global talkbox
     await talkbox.build_chain()
 
 
@@ -193,6 +196,7 @@ async def say(ctx: Context, *args):
 @bot.command(pass_context=True)
 async def talk(message: Message, llen: commands.Greedy[int] = None, *, init: str = None):
     async with message.channel.typing():
+        
         sms = await talkbox.gen_text(llen=llen, init=init)
         if(sms):
             await message.channel.send(sms)
@@ -263,8 +267,9 @@ async def on_ready():
     await logMe("|-------------------------------------------|")
     await logMe("|         Bootup Sequence complete          |")
     await bot.change_presence(activity=Game(name="Complex Numbers"))
+    global talkbox  # EX DEE
     talkbox = TalkBox(config=config, bot=bot, logMe=logMe)
-    asyncio.create_task(wednesday(config=config, bot=bot))
+    # asyncio.create_task(wednesday(config=config, bot=bot))
     asyncio.create_task(talkbox.pull_messages())
     await logMe("|-------------- doBootUp End ---------------|")
 
