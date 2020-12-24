@@ -4,3 +4,4 @@ grequests
 numpy
 discord.py
 emoji
+beautifulsoup4
