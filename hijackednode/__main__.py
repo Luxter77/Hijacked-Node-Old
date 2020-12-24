@@ -2,13 +2,13 @@ from argparse import ArgumentParser
 
 from . import main
 
-parser = ArgumentParser(description=̈́'Hijacked-Node\'s CLI')
+parser = ArgumentParser(description='Hijacked-Node\'s CLI')
 
-parser.add('pull', help='Pull messages from configured targets and exit', type=bool, action='store_true')
-parser.add('debug', help='TODO: Implement this feature', type=bool, action='store_true')
-parser.add('server' help='postgresql database TODO' type=str, default='localhost')
-parser.add('user' help='database\'s user TODO' type=str, default='postgre')
-parser.add('pass' help='user\'s password TODO' type=str, default='postgre')
+parser.add_argument('pull', help='Pull messages from configured targets and exit', action='store_true')
+parser.add_argument('debug', help='TODO: Implement this feature', action='store_true')
+parser.add_argument('server', help='postgresql database TODO', type=str, default='localhost')
+parser.add_argument('user', help='database\'s user TODO', type=str, default='postgre')
+parser.add_argument('pass', help='user\'s password TODO', type=str, default='postgre')
 
 
 def pcla() -> bool:

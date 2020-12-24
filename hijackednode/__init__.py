@@ -273,7 +273,7 @@ async def on_ready():
     asyncio.create_task(talkbox.pull_messages())
     await logMe("|-------------- doBootUp End ---------------|")
 
-def main():
+def main(cla = {}):
     bot.run(config.TOKEN)
 
 if __name__=='__main__':
