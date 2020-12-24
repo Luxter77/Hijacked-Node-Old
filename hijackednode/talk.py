@@ -146,7 +146,7 @@ class TalkBox:
             messages_all = []
             for guild in tqdm(self.bot.guilds):
                 if guild.id in self.config.GildExList:
-                    pass
+                    continue
                 await self.logMe(
                     "Now processing: " +
                     str(guild.name) + " (" + str(guild.id) + ")",
@@ -154,8 +154,8 @@ class TalkBox:
                     False,
                 )
                 for channel in tqdm(guild.text_channels):
-                    if channel.id in self.config.ChanExList:
-                        pass
+                    if channel in self.config.ChanExList:
+                        continue
                     try:
                         await self.logMe(
                             " - Now Processing: "
