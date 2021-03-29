@@ -27,22 +27,22 @@ def _get_def_doc() -> str:
         ).strip())
 
 _WeapList = set(
-    "Emojis", "Cringe", "A chainsaw", "Comnism", "Capitalism", "Anarchism",
-    "Memes", "An informatic virus", "Yo' mama", "The BFG", "It's own guts",
-    "My bare fists", "A giantic book", "Extraneous furry imagery",
-    "An orbital strike", "Oracle®", "A rocket launcher",
+    "Emojis", "Cringe", "A chainsaw", "Communism", "Capitalism", "Anarchism",
+    "Memes", "An Informatic virus", "Yo' mama", "The BFG", "It's own guts",
+    "My bare fists", "A gigantic book", "Extraneous furry imagery",
+    "An orbital strike", "Oracle®", "A rocket launcher", "Margaret Teacher",
     "A specially annoying kid with aspergers", "An assault rifle",
-    "A Heaby machinegun", "It's own arms", "A nuclear bomb", "Puppies",
-    "javascript", "EvilCorp", "literally me", "the power of God and anime"
+    "A Heavy machinegun", "It's own arms", "A nuclear bomb", "Puppies",
+    "javascript", "EvilCorp", "literally me", "the power of God and anime",
 )
 
 _PATH = os.path.join(_get_def_doc(), "Hijacked-Node")
 
-_TreeDir = [
-    'img',
-    'txt',
-    'wsp',
-]
+_TreeDir = {
+    'img': ['birthday', 'daily'],
+    'txt': [],
+    'wsp': [],
+}
 
 EmoteNestType = List[List[str, Union[str, discord_Emoji]]]
 DiscordChannelType = Set[Union[str, int, TextChannel]]
@@ -85,6 +85,7 @@ class CONF0():
                  GildExList: DiscordGuildType = set(),
                  WordExList: WordsType = set(),
                  WordBanLst: WordsType = set(),
+                 SpecDate: List[dict] = [],
                  DailyDict: DailyDictType = set(),
                  DailyChan: DiscordChannelType = set(),
                  EmoteNest: EmoteNestType = set(),
@@ -109,6 +110,7 @@ class CONF0():
             self.GildExList = GildExList
             self.WordExList = WordExList
             self.WordBanLst = WordBanLst
+            self.SpecDate = SpecDate
             self.DailyDict = DailyDict
             self.DailyChan = DailyChan
             self.EmoteNest = EmoteNest
