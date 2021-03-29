@@ -17,7 +17,6 @@ async def on_command_error(context, exception):
     except Exception:
         None
 
-
 @bot.event
 async def on_error(event_method, *args, **kwargs):
     try:
@@ -28,7 +27,6 @@ async def on_error(event_method, *args, **kwargs):
         print(" Ignoring exception in {}".format(event_method), file=sys.stderr)
         traceback.print_exc()
         print("|----------------- ERR_ END -----------------|")
-
 
 @bot.event
 async def on_message(message):

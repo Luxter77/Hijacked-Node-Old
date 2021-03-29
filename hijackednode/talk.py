@@ -1,96 +1,105 @@
-import subprocess
+from hijackednode.configuration import CONF0
+from random import choice, randint
+from copy import deepcopy
+from typing import List
 import asyncio
 import os
+import re
 
-import numpy as np
 
-from hijackednode.configuration import CONF0
-from hijackednode import tqdm
 class TalkBox:
     'This is where the magic happens'
+
+    PATCHES = {
+        "forward": [("(", ""), (")", ""), ("[", ""), ("]", ""), ("{", ""), ("}", ""), ("*", ""),
+                    ("-", " "), ("\n", ". "), ("_", ""), (" :", ":"), (": ", ":"), (":", " : "),
+                    ("; ", ";"), (" ;", ";"), (";", " ; "), (" ,", ","), (", ", ","), (",", " , "),
+                    (" .", "."), (". ", "."), (".", " . "), (". . .", "..."), ("  ", " "), ("  ", " ")],
+        "backward": [(" :", ":"), (" ;", ";"), (" , ", ", "), (" .", "."), (" i ", " Yo ")],
+    }
+
+    TRANS_LOCK  = asyncio.Lock()  # Lock for trans_map AND all_text AND all_words AND chain
+    CORPUS_LOCK = asyncio.Lock()  # Lock for the files on disk that hold the corpus
+
     def __init__(self, config: CONF0):
 
         self.CORPUS_TXT_PATH = os.path.join(config.PATH, "corpus.lst")
         os.makedirs(os.path.join(config.PATH, "DB"), exist_ok=True)
+        self.load_dict()
 
+    def reload_dict(self):
+        with self.TRANS_LOCK:
+            self.all_text  = self.get_chat()
+            self.all_words = list(set(self.all_text))
+            self.trans_map = {'ntw': self.all_words, 'wtn': dict((x, i,) for i, x in enumerate(self.all_words))}
+        self.mk_chain()
 
-# GLock
-global W_DB, wdict, Dictnry, W_DLOCK, corporae, IsSyncEd
+    def get_chat(self) -> List[str]:
+        try:
+            with self.CORPUS_LOCK:
+                chat = None  # Magic is supposed to happen here!
+                return chat
+        except FileNotFoundError:
+            ...  # More magic to pull more things
 
-W_DLOCK = False
-corporae = [""]
-try:
-    wdict = pickle.load(open(CORPUS_TXT_PATH + ".pkl", "rb"))
-    Dictnry = {v: k for k, v in tqdm(wdict.items())}
-    W_DB = {}
-    IsSyncEd = True
-except Exception:
-    wdict, Dictnry, W_DB = {}, {}, {}
-    IsSyncEd = False
+    def mk_chain(self):
+        with self.TRANS_LOCK:
+            trans_map = deepcopy(self.trans_map)
+        chain = dict()
+        primer = trans_map['wtn'][trans_map['ntw'][0]]
+        for word in self.all_text:  # pylint: disable=not-an-iterable # are you bucking kidding me pylint? thats a list! how can it be non iterable???
+            word = trans_map['wtn'][word]
+            try:
+                chain[primer].append(word)
+            except KeyError:
+                chain[primer] = [word]
+            finally:
+                primer = word
 
-# MkbFunc
-async def DefPoint():
-    def make_pairs(corpus):
-        for i in range(len(corpus) - 2):
-            yield (corpus[i], corpus[i + 1])
+        with self.TRANS_LOCK:
+            self.chain = chain
 
-    corpus = open(CORPUS_TXT_PATH, encoding="utf8").read().split(" ")
-    W_D = {}
-    for W1, W2 in tqdm(make_pairs(corpus)):
-        if W1 in W_D.keys():
-            W_D[W1].append(W2)
+    def until_word(self, end_word: str = '.', until: int = 15, max_length: int = 40, primer: str = False, init: list = False) -> str:
+        # TODO: Move these hardcoded settings to the config file
+        with self.TRANS_LOCK:
+            chain = deepcopy(self.chain)
+            trans_map = deepcopy(self.trans_map)
+
+        if bool(primer) and not(init):
+            sms = [trans_map['wtn'][primer]]
+        elif bool(init):
+            try:
+                sms = [trans_map['wtn'][init[-1]]]
+            except KeyError:
+                sms = [trans_map['wtn'][choice(trans_map['ntw'])]]
         else:
-            W_D[W1] = [W2]
-    return (W_D, corpus)
+            sms = [trans_map['wtn'][choice(trans_map['ntw'])]]
 
+        while ((len(sms) < until) or (sms[-1] != trans_map['wtn'][end_word]) or not(len(sms) > max_length)):
+            sms.append(choice(chain[sms[-1]]))
 
-def UntilPoint(W_DB, corpus, llen, init):
-    try:
-        llen = abs(llen)
-        if llen > 200:
-            llen = 200
-    except Exception:
-        llen = np.random.randint(5, 7)
-    global Dictnry
-    try:
-        chain = [init] if (init) else [np.random.choice(corpus)]
-        while Dictnry[chain[0]] in [";", ":", ",", "."]:
-            chain = [np.random.choice(corpus)]
-        while (len(chain) < llen) or (
-            not (("." in Dictnry[chain[-1]]))
-            and (len(chain) < np.random.randint(13, 17))
-        ):
-            chain.append(np.random.choice(W_DB[chain[-1]]))
-    except Exception:
-        chain = [np.random.choice(corpus)]
-        while Dictnry[chain[0]] in [";", ":", ",", "."]:
-            chain = [np.random.choice(corpus)]
-        while (len(chain) < llen) or (
-            not (("." in Dictnry[chain[-1]]))
-            and (len(chain) < np.random.randint(13, 17))
-        ):
-            chain.append(np.random.choice(W_DB[chain[-1]]))
-    return chain
+        sms = self._plex(' '.join([trans_map['ntw'][word] for word in sms]), 'backward')
+        sms = re.sub("⣿", (lambda: str(randint(0, 9))), sms)
 
+        if bool(init):
+            sms = ' '.join(init) + " " + sms
 
-async def transsBack(cunn, b=True):
-    if os.name == "nt":
-        return cunn  # windows bad linux good
-    else:
-        process = await asyncio.create_subprocess_exec(
-            "apertium",
-            ("en-es" if (b) else "es-en"),
-            "-u",
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )  # fuck pythonic code, all my hommies hate pythonic code - this post was made by the perl gang
-        process.stdin.write(str(cunn).encode())
-        conn, err_ = await process.communicate()
-        if err_:
-            await logMe(err_, True)
-        del err_
-        conn = conn.decode("utf-8")
-        await process.stdin.close()
-        await process.terminate()
-        return(conn)
+        return(sms)
+
+    def _plex(self, text: str, direction: str = 'forward') -> str:
+        for patch in self.PATCHES[direction]:
+            for x, y in patch:
+                text = text.replace(x, y)
+            return(text)
+
+    def _skala_checks(self, skala: str):
+        if (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or (set(skala).isdisjoint(set(UNICODE_EMOJI))) or (set(skala).isdisjoint(set(self.config.WordBanLst))):
+            return True
+        else:
+            for nono in self.config.PrefBanLst:
+                if skala.startswith(nono):
+                    return True
+        return False
+
+    def _pipeline(self, skala: str) -> str:
+        ...

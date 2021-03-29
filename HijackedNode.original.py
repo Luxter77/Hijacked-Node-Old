@@ -991,4 +991,3 @@ async def on_ready():
     await doBootUp()
 
 
-bot.run(config.TOKEN)

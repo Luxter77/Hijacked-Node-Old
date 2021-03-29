@@ -1,14 +1,18 @@
+from discord import TextChannel, User
+from discord.ext.commands import Bot
+from .configuration import CONF0
+from tqdm.asyncio import tqdm
 class LogMe:
     """This is a  complicated logger I came up with.\n
-    Feel free to insult me wilst readding it."""
+    Feel free to insult me whilst readding it."""
 
     _std = {
         "LS": "|-----------------Log_ START-------------------|",
         "ES": "|-----------------ERR_ START-------------------|",
         "EE": "|------------------ERR_ END--------------------|",
         "LE": "|------------------Log_ END--------------------|",
-        "!?": "Some unprinteable error happened...",
-        "!!": "Ah for fucks sake something went horribly grong!",
+        "!?": "Some unprintable error happened...",
+        "!!": "Ah for fucks sake something went horribly wrong!",
     }
 
     def __init__(self, bot: Bot, config: CONF0):
@@ -20,65 +24,63 @@ class LogMe:
             print(self._std["ES"]) if (tq) else tqdm.write(self._std["ES"])
             print(st) if (tq) else tqdm.write(st)
             try:
-                with self.bot.get_channel(self.LogChan) as Chan:
-                    await Chan.send()
+                with self.bot.get_channel(self.LogChan) as chan:
+                    await chan.send()
                     if self.LogAdmin:
-                        await Chan.send(
+                        await chan.send(
                             " ".join([str(admin.mention) for admin in self.LogAdmin])
                         )
-                    await Chan.send(st)
-                    await Chan.send(self._std["EE"])
+                    await chan.send(st)
+                    await chan.send(self._std["EE"])
             except Exception:
                 try:
-                    with self.bot.get_channel(self.debug) as Chan:
-                        await Chan.send(self._std["ES"])
+                    with self.bot.get_channel(self.debug) as chan:
+                        await chan.send(self._std["ES"])
                         try:
                             if self.LogAdmin:
-                                await Chan.send(
+                                await chan.send(
                                     " ".join(
                                         [str(admin.mention) for admin in self.LogAdmin]
                                     )
                                 )
-                            await Chan.send(str(st))
+                            await chan.send(str(st))
                         except Exception:
                             if self.LogAdmin:
-                                await Chan.send(
+                                await chan.send(
                                     " ".join(
                                         [str(admin.mention) for admin in self.LogAdmin]
                                     )
                                 )
-                            await Chan.send("Some unprinteable error happened...")
-                        await Chan.send(self._std["EE"])
+                            await chan.send("Some unprintable error happened...")
+                        await chan.send(self._std["EE"])
                 except Exception:
-                    _std = "Ah for hugs sake something went horribly grong! AGAIN"
+                    _std = "Ah for hugs sake something went horribly wrong! AGAIN"
                     print(_std) if (tq) else tqdm.write(_std)
             print(self._std["EE"]) if (tq) else tqdm.write(self._std["EE"])
         else:
             print(st) if (tq) else tqdm.write(st)
             try:
-                with self.bot.get_channel(self.debug) as Chan:
-                    await Chan.send(st)
+                with self.bot.get_channel(self.debug) as chan:
+                    await chan.send(st)
             except Exception:
                 try:
-                    with self.bot.get_channel(self.debug) as Chan:
+                    with self.bot.get_channel(self.debug) as chan:
                         try:
                             try:
-                                await Chan.send(st)
+                                await chan.send(st)
                             except Exception:
-                                await Chan.send(str(type(st)))
-                                await Chan.send(str(st))
+                                await chan.send(str(type(st)))
+                                await chan.send(str(st))
                         except Exception:
-                            await Chan.send(self._std["!?"])
+                            await chan.send(self._std["!?"])
                 except Exception:
-                    await Chan.send(self._std["LS"])
                     await self(self._std["!!"], True)
-                    await Chan.send(self._std["LE"])
 
     def add_LogChan(self, Chan: TextChannel) -> None:
-        self.LogChan.add(Chan)
+        self.Logchan.add(Chan)
 
     def del_LogChan(self, Chan: TextChannel) -> None:
-        self.LogChan.remove(Chan)
+        self.Logchan.remove(Chan)
 
     def add_LogAdmin(self, Admin: User) -> None:
         self.LogAdmin.add(Admin)
