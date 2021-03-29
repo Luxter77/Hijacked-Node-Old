@@ -137,3 +137,6 @@ dmypy.json
 !requirements.txt
 !.*template.configuration.py
 .*/DB/*
+
+# vscode
+.vscode
