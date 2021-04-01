@@ -15,9 +15,11 @@
         "Lixt",
         "Steph",
         "Weap",
+        "aiofile",
         "apertium",
         "asynctqdm",
         "gevent",
+        "infopog",
         "isdisjoint",
         "plex",
         "unplex"
