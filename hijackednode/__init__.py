@@ -145,4 +145,5 @@ async def talk(message, line_len: commands.Greedy[int] = None, init: commands.Gr
     async with message.channel.typing():
         await message.channel.send(talkbox.until_word(until=line_len, init=init))
 
-bot.run(config.TOKEN)
+if __name__ == '__main__':
+	bot.run(config.TOKEN)

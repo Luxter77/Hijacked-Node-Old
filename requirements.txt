@@ -1,7 +1,7 @@
 tqdm
+emoji
 numpy
 grequests
-fake_useragent
-emoji
 discord.py
+fake_useragent
 beautifulsoup4

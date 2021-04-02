@@ -1,4 +1,3 @@
-from asyncio.windows_utils import PipeHandle
 from random import choice, randint
 from .configuration import CONF0
 from emoji import UNICODE_EMOJI
