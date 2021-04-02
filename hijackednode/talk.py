@@ -13,17 +13,25 @@ import re
 
 # define FPCAMHHPC = "fuck pythonic code, all my homies hate pythonic code - this post was made by the perl gang"
 
-async def trans_back(text, b=True) -> str:
+async def trans(text, ptq) -> str:
     if os.name != "nt":  # windows bad linux good
         # FPCAMHHPC
         process = await asyncio.create_subprocess_exec(
-            "apertium", ("en-es" if (b) else "es-en"), "-u",
-            stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,)
+            "apertium", ptq, "-u", stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
         process.stdin.write(str(text).encode())
         text = (await process.communicate())[0].decode("utf-8")
         await process.stdin.close()
         await process.terminate()
     return text
+
+async def trans_back(text: str, org: str = 'es'):
+    if org == 'en':
+        await trans(await trans(text, 'en-es'), 'es-en')
+    elif org == 'es':
+        await trans(await trans(text, 'es-en'), 'en-es')
+    else:
+        raise(Exception('LangNotSupportedError'))
+
 class TextPipeLine:
     'The thing that chews all the text and stuff'
 
@@ -92,7 +100,7 @@ class TextPipeLine:
             if(len(word) > 14):
                 text.replace(word, '')
 
-        text = ((await self.plex(trans_back(unicodedata.normalize("NFC", text)), 'forward')))  # FPCAMHHPC
+        text = ((await self.plex(await trans_back(unicodedata.normalize("NFC", text)), 'forward')))  # FPCAMHHPC
 
         if not(text.endswith('.')):
             return(text.split())

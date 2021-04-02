@@ -29,10 +29,9 @@ import re
 from . import talkbox, bot, config
 from .image import bing_image
 
-async def pull_new_messages(ctx=None, fox=True):
+async def pull_new_messages(last_time: dt.datetime = None):
     with talkbox.CORPUS_LOCK:
-        last_time, messages_all = None, dict()
-
+        messages_all = dict()
         try:
             with open(os.path.join(config.PATH, "DB", "parrot.json"), "rb") as parrot:
                 messages_all = json.load(parrot)
@@ -61,11 +60,15 @@ async def pull_new_messages(ctx=None, fox=True):
                                     messages_all[str(guild.id)][str(channel.id)] = [message.content]
                                 except Exception:
                                     messages_all[str(guild.id)] = {str(channel.id): [message.content]}
-
                 except Exception:
                     pass  # This usually means that we cant read that channel; oh well, just pass
 
         messages_all['last_time'] = dt.datetime.now().timestamp()
+
+        with open(os.path.join(config.PATH, "DB", "parrot.json"), "rb") as parrot:
+            json.dump(messages_all, parrot)
+        with open(os.path.join(config.PATH, "DB", "parrot.bkp.json"), "rb") as parrot:
+            json.dump(messages_all, parrot)
 
 # BOT COMMANDS
 
@@ -104,7 +107,7 @@ async def imgSearch(ctx: commands.Context, *args):
 
 # Discord Comm
 @bot.command(pass_context=True)
-async def getLastFrom(ctx):
+async def last_file(ctx):
     if os.name == "nt":
         await ctx.send("Windows bad, Linux good")  # Windows bad, linux good
     else:
@@ -136,7 +139,7 @@ async def say(ctx, *args):
         await ctx.send(" ".join(args))
 
 @bot.command(pass_context=True)
-async def talk(message, line_len: commands.Greedy[int] = None, *, init: commands.Greedy[str] = False):
+async def talk(message, line_len: commands.Greedy[int] = None, init: commands.Greedy[str] = False):
     if bool(init):
         init = init.split(' ')
     async with message.channel.typing():
