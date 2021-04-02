@@ -25,7 +25,7 @@ async def long_sleep(arg):
     finally:
         task.cancel()
 
-async def Wednesday(config: CONF0, bot: discord.ext.commands.Bot):
+async def wednesday(config: CONF0, bot: discord.ext.commands.Bot):
     while True:
         today, today_img = config.DailyDict[dt.datetime.today.weekday()]
         if today:
