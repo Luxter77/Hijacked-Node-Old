@@ -1,33 +1,40 @@
+from json.decoder import JSONDecodeError
 from random import choice, randint
-from .configuration import CONF0
-from emoji import UNICODE_EMOJI
+
+from .configuration import CONF0  # pylint: disable=relative-beyond-top-level
+from emoji import EMOJI_UNICODE_ENGLISH
 from copy import deepcopy
 from typing import List
 from glob import glob
 import unicodedata
+import subprocess as sp
 import asyncio
 import json
 import os
 import re
 
+class TalkBoxError(Exception):
+    ...  # Placeholder lol
+
 # define FPCAMHHPC = "fuck pythonic code, all my homies hate pythonic code - this post was made by the perl gang"
 
-async def trans(text, ptq) -> str:
+def also_print(thing: object):
+    print(str(type(thing)) + ': ' + repr(thing))
+    return thing
+
+async def trans(text: str, ptq: str) -> str:
     if os.name != "nt":  # windows bad linux good
         # FPCAMHHPC
-        process = await asyncio.create_subprocess_exec(
-            "apertium", ptq, "-u", stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-        process.stdin.write(str(text).encode())
-        text = (await process.communicate())[0].decode("utf-8")
-        await process.stdin.close()
-        await process.terminate()
+        process: sp.Popen = sp.Popen(["/usr/bin/apertium", ptq, "-u"], stdout=sp.PIPE, stdin=sp.PIPE)
+        process.stdin.write(text.encode())
+        text = process.communicate()[0].decode("utf-8")
     return text
 
 async def trans_back(text: str, org: str = 'es'):
     if org == 'en':
-        await trans(await trans(text, 'en-es'), 'es-en')
+        return await trans(await trans(text, 'en-es'), 'es-en')
     elif org == 'es':
-        await trans(await trans(text, 'es-en'), 'en-es')
+        return await trans(await trans(text, 'es-en'), 'en-es')
     else:
         raise(Exception('LangNotSupportedError'))
 
@@ -35,28 +42,34 @@ class TextPipeLine:
     'The thing that chews all the text and stuff'
 
     TEXT_PATCHES = {
-        "forward": [("(", ""), (")", ""), ("[", ""), ("]", ""), ("{", ""), ("}", ""), ("*", ""),
-                    ("-", " "), ("\n", ". "), ("_", ""), (" :", ":"), (": ", ":"), (":", " : "),
-                    ("; ", ";"), (" ;", ";"), (";", " ; "), (" ,", ","), (", ", ","), (",", " , "),
-                    (" .", "."), (". ", "."), (".", " . "), (". . .", "..."), ("  ", " "), ("  ", " "),
-                    ('1', '⣿'), ('2', '⣿'), ('3', '⣿'), ('4', '⣿'), ('5', '⣿'), ('6', '⣿'), ('7', '⣿'),
-                    ('8', '⣿'), ('9', '⣿'), ('jsjs', 'jajaja'), ('jaja', 'jajaja')],
-        "backward": [(" :", ":"), (" ;", ";"), (" , ", ", "), (" .", "."), (" i ", " Yo ")],
+        "forward": [("(", "",), (")", "",), ("[", "",), ("]", "",), ("{", "",), ("}", "",), ("*", "",), ('"', ''),
+                    ("-", " ",), ("\n", ". ",), ("_", "",), (":", " : ",), (";", " ; ",), (",", " , ",),
+                    (".", " . ",), ('  ', ' ',), ('  ', ' ',), (". . .", "...",), ('1', '⣿',), ('2', '⣿',),
+                    ('3', '⣿',), ('4', '⣿',), ('5', '⣿',), ('6', '⣿',), ('7', '⣿',), ('8', '⣿',), ('9', '⣿',),
+                    ('jsjs', 'jajaja',), ('jaja', 'jajaja',)],
+        "backward": [(" :", ":",), (" ;", ";",), (" , ", ", ",), (" .", ".",), (" i ", " Yo ",)],
     }
 
     def __init__(self, config: CONF0):
         self.config: CONF0 = config
-        self.CORPUS_TXT_PATH = os.path.join(config.PATH, "corpus.lst")
 
     def plex(self, text: str, direction: str = 'forward') -> str:
         # poor choice, but I don't care
-        for patch in (self.TEXT_PATCHES[direction] + list(' ' + bw for bw in self.config.WordExList) + list(' ' + bw for bw in self.config.WordExList)):
-            for x, y in patch:
-                text = text.replace(x, y)
-        return(re.sub("⣿", (lambda: str(randint(0, 9))), text))
+        for x, y in (self.TEXT_PATCHES[direction]):
+            text = text.replace(x, y)
 
-    def checks(self, skala: str):
-        if (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or (set(skala).isdisjoint(set(UNICODE_EMOJI))) or (set(skala).isdisjoint(set(self.config.WordBanLst))):
+        for patch in self.config.WordExList:
+            text = text.replace(' ' + patch, '')
+            text = text.replace(patch + ' ', '')
+            text = text.replace(patch, '')
+
+        if direction == 'backward':
+            return re.sub("⣿", (lambda _: str(randint(0, 9))), text)
+        else:
+            return text
+
+    def checks(self, skala: str) -> bool:
+        if (not(skala) or (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
             return False
         else:
             for banned in self.config.PrefBanLst:
@@ -67,8 +80,17 @@ class TextPipeLine:
     async def load_from_discord_dump(self) -> List[str]:
         "It's a bad multilingual pun"
         # WARNING: you should set up a lock outside from this function
-        with open(os.path.join(self.config.PATH, "DB", "parrot.json"), 'r') as corp_file:
-            chat_log, proto_corp = json.load(corp_file), list()
+        try:
+            with open(os.path.join(self.config.PATH, "DB", "parrot.json"), 'r') as corp_file:
+                chat_log   = json.load(corp_file)
+                proto_corp = list()
+        except JSONDecodeError:
+            with open(os.path.join(self.config.PATH, "DB", "parrot.bkp.json"), 'r') as corp_file:
+                chat_log   = json.load(corp_file)
+                proto_corp = list()
+        except FileNotFoundError:
+            chat_log   = {'last_time': None}
+            proto_corp = list()
 
         del chat_log['last_time']
 
@@ -77,19 +99,17 @@ class TextPipeLine:
                 for message in channel:
                     message = str(message)
                     if self.checks(message):
-                        proto_corp += await self.parse_message(message)
+                        proto_corp += trans_back(await self.parse_message(message))
         return(proto_corp)
 
     async def load_from_steph_logs(self) -> List[str]:
         proto_corp = list()
-        if self.config.StephLog:
-            for steph in glob(os.path.join(self.config.PATH, "DB", "wsp", "*.lst")):
-                with open(steph, "r", encoding="utf-8") as steph_file:
-                    for line in (steph_file.readlines()):
-                        line = line.lower()
-                        if self.checks(line):
-                            proto_corp += await self.parse_message(line)
-
+        for steph_path in self.config.StephLogs:
+            with open(steph_path, "r", encoding="utf-8") as steph_file:
+                for line in (await trans_back(steph_file.read())).splitlines():
+                    line = line.lower()
+                    if self.checks(line):
+                        proto_corp += also_print(await self.parse_message(line))
         return(proto_corp)
 
     async def parse_message(self, text: str) -> List[str]:
@@ -99,12 +119,15 @@ class TextPipeLine:
             if(len(word) > 14):
                 text.replace(word, '')
 
-        text = ((await self.plex(await trans_back(unicodedata.normalize("NFC", text)), 'forward')))  # FPCAMHHPC
+        text = self.plex(await unicodedata.normalize("NFC", text)).lower().split()  # FPCAMHHPC
 
-        if not(text.endswith('.')):
-            return(text.split())
-
-        return(text.split() + ['.'])
+        if (text[-1] == '.') and (text[-1] == text[-2]):
+            if (text[-1] != text[-3]):
+                return text[:-1]
+            else:
+                return text[:2]
+        else:
+            return text
 
 class TalkBox:
     'This is where the magic happens'
@@ -114,28 +137,21 @@ class TalkBox:
     CORPUS_LOCK = asyncio.Lock()  # Lock for the files on disk that hold the corpus
 
     def __init__(self, config: CONF0):
-        self.config = config
+        self.config: CONF0 = config
         self.pipeline = TextPipeLine(config)
         os.makedirs(os.path.join(config.PATH, "DB"), exist_ok=True)
-        self.reload_dict()
 
-    def reload_dict(self) -> None:
-        with self.TRANS_LOCK:
-            self.all_text:  list = self.get_chat()
+    async def reload_dict(self) -> None:
+        async with self.TRANS_LOCK:
+            async with self.CORPUS_LOCK:
+                self.all_text:  list = (await self.pipeline.load_from_steph_logs()) + (await self.pipeline.load_from_discord_dump())
+            print(self.all_text)
             self.all_words: list = list(set(self.all_text))
             self.trans_map: dict = {'ntw': self.all_words, 'wtn': dict((x, i,) for i, x in enumerate(self.all_words))}
-        self.mk_chain()
+        await self.mk_chain()
 
-    def get_chat(self) -> List[str]:
-        try:
-            with self.CORPUS_LOCK:
-                chat = None  # Magic is supposed to happen here!
-                return chat
-        except FileNotFoundError:
-            ...  # More magic to pull more things
-
-    def mk_chain(self) -> None:
-        with self.TRANS_LOCK:
+    async def mk_chain(self) -> None:
+        async with self.TRANS_LOCK:
             trans_map = deepcopy(self.trans_map)
         chain = dict()
         primer = trans_map['wtn'][trans_map['ntw'][0]]
@@ -148,12 +164,12 @@ class TalkBox:
             finally:
                 primer = word
 
-        with self.TRANS_LOCK:
+        async with self.TRANS_LOCK:
             self.chain = chain
 
-    def until_word(self, end_word: str = '.', until: int = 15, max_length: int = 40, primer: str = False, init: list = False) -> str:
+    async def until_word(self, end_word: str = '.', until: int = 15, max_length: int = 40, primer: str = False, init: list = False) -> str:
         # TODO: Move these hardcoded settings to the config file
-        with self.TRANS_LOCK:
+        async with self.TRANS_LOCK:
             chain = deepcopy(self.chain)
             trans_map = deepcopy(self.trans_map)
 
