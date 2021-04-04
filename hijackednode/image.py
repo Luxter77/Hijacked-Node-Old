@@ -1,13 +1,9 @@
-# something something importing ssl multiple times
-from gevent import monkey as curious_george
-curious_george.patch_all(thread=False, select=False)
-
 from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
 
 from .configuration import CONF0
 
-import grequests
+import requests
 import shutil
 import json
 import sys
@@ -24,7 +20,7 @@ async def bing_image(query, delta, config: CONF0):
         ua = UserAgent(verify_ssl=False)
         headers = {"User-Agent": ua.random}
         payload = (("q", str(query)), ("first", page_counter), ("adlt", False))
-        source = grequests.get("https://www.bing.com/images/async", params=payload, headers=headers).content
+        source = requests.get("https://www.bing.com/images/async", params=payload, headers=headers).content
         soup = BeautifulSoup(str(source).replace("\r", "").replace("\n", ""), "lxml")
         for a in soup.find_all("a", class_="iusc"):
             if download_image_delta >= delta:
@@ -44,7 +40,7 @@ async def bing_image(query, delta, config: CONF0):
                     file_path = os.path.join(config.PATH, "DB", "img", "ext", query, "Scrapper_" + str(download_image_delta) + "." + str(type))
                     ua = UserAgent(verify_ssl=False)
                     headers = {"User-Agent": ua.random}
-                    r = grequests.get(link, stream=True, headers=headers)
+                    r = requests.get(link, stream=True, headers=headers)
                     if r.status_code == 200:
                         with open(file_path, "wb") as f:
                             r.raw.decode_content = True
