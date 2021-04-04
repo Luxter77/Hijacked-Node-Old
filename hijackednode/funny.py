@@ -9,7 +9,7 @@ class Pain():
     '''
     # You may be asking now:\n
     #    Luxter, why the hug did you make this into a class instead of a recursive function\n
-    # I anwser:\n
+    # I answer:\n
     #    You expect too much out of this dumpster fire of a module.\n
     UPDATE: hug you Loop\n
     UPDATE: THIS IS HARDER THAN IT LOOKS\n
@@ -31,5 +31,5 @@ class Pain():
         print("Hug you Loop.")
         raise(choice(list(self.why_would_you_do_something_like_this_you_absolute_([pain]))))
 
-if(__name__ == '__main__'):
-    Pain(BaseException)
+# if __name__ == '__main__':
+#     Pain(BaseException)
