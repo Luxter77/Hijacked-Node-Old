@@ -45,7 +45,7 @@ async def bing_image(query, delta, config: CONF0):
                         with open(file_path, "wb") as f:
                             r.raw.decode_content = True
                             shutil.copyfileobj(r.raw, f)
-                except Exception as e:
+                except Exception:
                     download_image_delta -= 1
                 download_image_delta -= 1
             except Exception:
