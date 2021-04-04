@@ -1,14 +1,14 @@
 from typing import Union, List, Set, NamedTuple
 from collections import UserDict
 
-import pickle
+import json
 import os
 
 from base64 import standard_b64decode as de64
 
 from discord import User, TextChannel, Guild
 
-from hijackednode.funny import Pain  # spoilers, its not funny
+from .funny import Pain  # spoilers, its not funny
 
 if(os.name == "nt"):
     import ctypes.wintypes
@@ -40,9 +40,12 @@ _PATH = os.path.join(_get_def_doc(), "Hijacked-Node")
 
 _TreeDir = {
     'parrot': None,
-    'img': {'birthday': None, 'daily': None},
-    'txt': [],
-    'wsp': [],
+    'img': {
+        'birthday': None,
+        'daily': None
+    },
+    'txt': None,
+    'wsp': None,
 }
 
 EmoteNestType = List[List[str]]
@@ -51,6 +54,7 @@ DiscordGuildType = Set[Union[str, int, Guild]]
 DiscrodUserType = Set[Union[str, int, User]]
 WeapListType = Union[Set[str], List[str]]
 WordsType = Set[str]
+
 class DayCheckType(NamedTuple):
     check: bool
     fle: str
@@ -72,7 +76,7 @@ class CONF0():
         'TOKEN', 'DevLab', 'LogChan', 'LogAdmin', 'SUPERUSER', 'UserExLixt',
         'ChanExList', 'GildExList', 'WordExList', 'WordBanLst', 'DailyDict',
         'DailyChan', 'EmoteNest', 'CommandPrefix', 'PATH', 'LogToFile',
-        'AllowEmoji', 'WeapList'  # , 'StephLog',
+        'AllowEmoji', 'WeapList', 'StephLogs',
     ]
 
     def __init__(self,
@@ -97,66 +101,77 @@ class CONF0():
                  WeapList: WeapListType = _WeapList,
                  DoLoadFile: bool = True,
                  PrefBanLst: Set[str] = set(),
-                 StephLog: bool = False,
+                 StephLogs: bool = False,
                  ):
+        self.TOKEN = TOKEN
+        self.DevLab = DevLab
+        self.LogChan = LogChan
+        self.LogAdmin = LogAdmin
+        self.SUPERUSER = SUPERUSER
+        self.UserExLixt = UserExLixt
+        self.ChanExList = ChanExList
+        self.GildExList = GildExList
+        self.WordExList = WordExList
+        self.WordBanLst = WordBanLst
+        self.SpecDate = SpecDate
+        self.DailyDict = DailyDict
+        self.DailyChan = DailyChan
+        self.EmoteNest = EmoteNest
+        self.CommandPrefix = CommandPrefix
+        self.DoLoadFile = DoLoadFile
+        self.PATH = PATH
+        self.LogToFile = LogToFile
+        self.AllowEmoji = AllowEmoji
+        self.WeapList = WeapList
+        self.PrefBanLst = PrefBanLst
+        self.StephLogs = StephLogs
         try:
             self.load()
         except Exception:
-            self.TOKEN = TOKEN
-            self.DevLab = DevLab
-            self.LogChan = LogChan
-            self.LogAdmin = LogAdmin
-            self.SUPERUSER = SUPERUSER
-            self.UserExLixt = UserExLixt
-            self.ChanExList = ChanExList
-            self.GildExList = GildExList
-            self.WordExList = WordExList
-            self.WordBanLst = WordBanLst
-            self.SpecDate = SpecDate
-            self.DailyDict = DailyDict
-            self.DailyChan = DailyChan
-            self.EmoteNest = EmoteNest
-            self.CommandPrefix = CommandPrefix
-            self.DoLoadFile = DoLoadFile
-            self.PATH = PATH
-            self.LogToFile = LogToFile
-            self.AllowEmoji = AllowEmoji
-            self.WeapList = WeapList
-            self.PrefBanLst = PrefBanLst
-            self.StephLog = StephLog
-        for x in _TreeDir:
-            os.makedirs(os.path.join(self.PATH, x), exist_ok=True)
+            pass  # oh well, I did my best :shrug:
+        self.ch_dirs(_TreeDir)
+
+    def ch_dirs(self, tree: dict):
+        for x in tree:
+            if tree[x] is None:
+                os.makedirs(os.path.join(self.PATH, x), exist_ok=True)
+            else:
+                self.ch_dirs(tree[x])
 
     def save(self):
         try:
-            pickle.dump(self, open(os.path.join(self.PATH, "Config.pkl"), "wb"))
+            with open(os.path.join(self.PATH, "config.json")) as confile:
+                json.dump(confile, confile, indent=4, sort_keys=True)
         except Exception:
             Pain(BaseException)  # Hug you Loop
 
     def load(self):
         try:
-            data = pickle.load(open(os.path.join(self.PATH, "Config.pkl"), "rb"))
-            self.TOKEN = data.TOKEN
-            self.DevLab = data.DevLab
-            self.LogChan = data.LogChan
-            self.LogAdmin = data.LogAdmin
-            self.SUPERUSER = data.SUPERUSER
-            self.UserExLixt = data.UserExLixt
-            self.ChanExList = data.ChanExList
-            self.GildExList = data.GildExList
-            self.WordExList = data.WordExList
-            self.WordBanLst = data.WordBanLst
-            self.SpecDate = data.SpecDate
-            self.DailyDict = data.DailyDict
-            self.DailyChan = data.DailyChan
-            self.EmoteNest = data.EmoteNest
-            self.CommandPrefix = data.CommandPrefix
-            self.DoLoadFile = data.DoLoadFile
-            self.PATH = data.PATH
-            self.LogToFile = data.LogToFile
-            self.AllowEmoji = data.AllowEmoji
-            self.WeapList = data.WeapList
-            self.PrefBanLst = data.PrefBanLst
-            self.StephLog = data.StephLog
+            data = json.load(open(os.path.join(self.PATH, "config.json"), "rb"))
+            self.TOKEN = data.get('TOKEN')
+            self.DevLab = data.get('DevLab')
+            self.LogChan = data.get('LogChan')
+            self.LogAdmin = data.get('LogAdmin')
+            self.SUPERUSER = data.get('SUPERUSER')
+            self.UserExLixt = data.get('UserExLixt')
+            self.ChanExList = data.get('ChanExList')
+            self.GildExList = data.get('GildExList')
+            self.WordExList = data.get('WordExList')
+            self.WordBanLst = data.get('WordBanLst')
+            self.SpecDate = data.get('SpecDate')
+            self.DailyDict = data.get('DailyDict')
+            self.DailyChan = data.get('DailyChan')
+            self.EmoteNest = data.get('EmoteNest')
+            self.CommandPrefix = data.get('CommandPrefix')
+            self.DoLoadFile = data.get('DoLoadFile')
+            self.PATH = data.get('PATH')
+            self.LogToFile = data.get('LogToFile')
+            self.AllowEmoji = data.get('AllowEmoji')
+            self.WeapList = data.get('WeapList')
+            self.PrefBanLst = data.get('PrefBanLst')
+            self.StephLogs = data.get('StephLogs')
+        except FileNotFoundError:
+            pass  # ex dee
         except Exception:
             Pain(BaseException)  # Hug you Loop
+            pass  # ex dee

@@ -26,7 +26,6 @@ import json
 import os
 import re
 
-from . import talkbox, bot, config
 from .image import bing_image
 
 async def pull_new_messages(last_time: dt.datetime = None):
@@ -139,11 +138,18 @@ async def say(ctx, *args):
         await ctx.send(" ".join(args))
 
 @bot.command(pass_context=True)
-async def talk(message, line_len: commands.Greedy[int] = None, init: commands.Greedy[str] = False):
+async def talk(message, line_len: commands.Greedy[int] = None, init: str = False):
     if bool(init):
         init = init.split(' ')
     async with message.channel.typing():
-        await message.channel.send(talkbox.until_word(until=line_len, init=init))
+        await message.channel.send(await talkbox.until_word(until=line_len, init=init))
+
+@bot.event
+async def on_ready():
+    await talkbox.reload_dict()
+
+def main():
+    bot.run(config.TOKEN)
 
 if __name__ == '__main__':
-	bot.run(config.TOKEN)
+    main()
