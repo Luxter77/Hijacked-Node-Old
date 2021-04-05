@@ -3,11 +3,13 @@ from random import choice, randint
 
 from .configuration import CONF0  # pylint: disable=relative-beyond-top-level
 from emoji import EMOJI_UNICODE_ENGLISH
+from tempfile import mktemp
 from copy import deepcopy
 from typing import List
 from glob import glob
-import unicodedata
+
 import subprocess as sp
+import unicodedata
 import asyncio
 import json
 import os
@@ -22,19 +24,19 @@ def also_print(thing: object):
     print(str(type(thing)) + ': ' + repr(thing))
     return thing
 
-async def trans(text: str, ptq: str) -> str:
+def trans(text: str, ptq: str, memory: str) -> str:
     if os.name != "nt":  # windows bad linux good
         # FPCAMHHPC
-        process: sp.Popen = sp.Popen(["/usr/bin/apertium", ptq, "-u"], stdout=sp.PIPE, stdin=sp.PIPE)
+        process: sp.Popen = sp.Popen(["/usr/bin/apertium", ptq, "-u", "-m", memory], stdout=sp.PIPE, stdin=sp.PIPE)
         process.stdin.write(text.encode())
         text = process.communicate()[0].decode("utf-8")
     return text
 
-async def trans_back(text: str, org: str = 'es'):
+def trans_back(text: str, memory:str, org: str = 'es-en'):
     if org == 'en':
-        return await trans(await trans(text, 'en-es'), 'es-en')
+        return trans(trans(text, 'en-es'), org='es-en', memory=memory)
     elif org == 'es':
-        return await trans(await trans(text, 'es-en'), 'en-es')
+        return trans(trans(text, 'es-en'), org='en-es', memory=memory)
     else:
         raise(Exception('LangNotSupportedError'))
 
@@ -52,6 +54,7 @@ class TextPipeLine:
 
     def __init__(self, config: CONF0):
         self.config: CONF0 = config
+        self.memory = config.memory
 
     def plex(self, text: str, direction: str = 'forward') -> str:
         # poor choice, but I don't care
@@ -99,17 +102,17 @@ class TextPipeLine:
                 for message in channel:
                     message = str(message)
                     if self.checks(message):
-                        proto_corp += trans_back(await self.parse_message(message))
+                        proto_corp += await self.parse_message(message)
         return(proto_corp)
 
     async def load_from_steph_logs(self) -> List[str]:
         proto_corp = list()
         for steph_path in self.config.StephLogs:
             with open(steph_path, "r", encoding="utf-8") as steph_file:
-                for line in (await trans_back(steph_file.read())).splitlines():
+                for line in (trans_back(steph_file.read(), memory=self.memory)).splitlines():
                     line = line.lower()
                     if self.checks(line):
-                        proto_corp += also_print(await self.parse_message(line))
+                        proto_corp += await self.parse_message(line)
         return(proto_corp)
 
     async def parse_message(self, text: str) -> List[str]:
@@ -121,13 +124,14 @@ class TextPipeLine:
 
         text = self.plex(await unicodedata.normalize("NFC", text)).lower().split()  # FPCAMHHPC
 
-        if (text[-1] == '.') and (text[-1] == text[-2]):
-            if (text[-1] != text[-3]):
-                return text[:-1]
-            else:
-                return text[:2]
+        if (text[-1] == '.'):
+            if (text[-2] == '.'):
+                if (text[-3] == '.'):
+                    return text[:-2]
+                else:
+                    return text[:-1]
         else:
-            return text
+            return text + ['.']
 
 class TalkBox:
     'This is where the magic happens'
@@ -187,6 +191,8 @@ class TalkBox:
             sms.append(choice(chain[sms[-1]]))
 
         sms = self.pipeline.plex(' '.join([trans_map['ntw'][word] for word in sms]), 'backward')
+
+        sms = trans_back(sms, memory=self.config.memory)
 
         if bool(init):
             sms = ' '.join(init) + " " + sms
