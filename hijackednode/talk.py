@@ -20,10 +20,6 @@ class TalkBoxError(Exception):
 
 # define FPCAMHHPC = "fuck pythonic code, all my homies hate pythonic code - this post was made by the perl gang"
 
-def also_print(thing: object):
-    print(str(type(thing)) + ': ' + repr(thing))
-    return thing
-
 def trans(text: str, ptq: str, memory: str) -> str:
     if os.name != "nt":  # windows bad linux good
         # FPCAMHHPC
@@ -32,11 +28,11 @@ def trans(text: str, ptq: str, memory: str) -> str:
         text = process.communicate()[0].decode("utf-8")
     return text
 
-def trans_back(text: str, memory:str, org: str = 'es-en'):
+def trans_back(text: str, memory: str, org: str = 'es-en'):
     if org == 'en':
-        return trans(trans(text, 'en-es'), org='es-en', memory=memory)
+        return trans(trans(text, ptq='en-es', memory=memory), ptq='es-en', memory=memory)
     elif org == 'es':
-        return trans(trans(text, 'es-en'), org='en-es', memory=memory)
+        return trans(trans(text, ptq='es-en', memory=memory), ptq='en-es', memory=memory)
     else:
         raise(Exception('LangNotSupportedError'))
 
