@@ -28,7 +28,7 @@ def trans(text: str, ptq: str, memory: str) -> str:
         text = process.communicate()[0].decode("utf-8")
     return text
 
-def trans_back(text: str, memory: str, org: str = 'es-en'):
+def trans_back(text: str, memory: str, org: str = 'es'):
     if org == 'en':
         return trans(trans(text, ptq='en-es', memory=memory), ptq='es-en', memory=memory)
     elif org == 'es':
@@ -68,7 +68,7 @@ class TextPipeLine:
             return text
 
     def checks(self, skala: str) -> bool:
-        if (not(skala) or (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
+        if ((len(skala) < 6) or (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
             return False
         else:
             for banned in self.config.PrefBanLst:
@@ -105,7 +105,7 @@ class TextPipeLine:
         proto_corp = list()
         for steph_path in self.config.StephLogs:
             with open(steph_path, "r", encoding="utf-8") as steph_file:
-                for line in (trans_back(steph_file.read(), memory=self.memory)).splitlines():
+                for line in steph_file.readlines():
                     line = line.lower()
                     if self.checks(line):
                         proto_corp += await self.parse_message(line)
@@ -118,16 +118,22 @@ class TextPipeLine:
             if(len(word) > 14):
                 text.replace(word, '')
 
-        text = self.plex(await unicodedata.normalize("NFC", text)).lower().split()  # FPCAMHHPC
+        text = self.plex(unicodedata.normalize("NFC", text)).lower().split()  # FPCAMHHPC
 
+        
         if (text[-1] == '.'):
             if (text[-2] == '.'):
                 if (text[-3] == '.'):
-                    return text[:-2]
+                    text = text[:-2]
                 else:
-                    return text[:-1]
+                    text = text[:-1]
         else:
-            return text + ['.']
+            text = text + ['.']
+
+        if bool(text):
+            return text
+        else:
+            return []
 
 class TalkBox:
     'This is where the magic happens'
@@ -145,7 +151,6 @@ class TalkBox:
         async with self.TRANS_LOCK:
             async with self.CORPUS_LOCK:
                 self.all_text:  list = (await self.pipeline.load_from_steph_logs()) + (await self.pipeline.load_from_discord_dump())
-            print(self.all_text)
             self.all_words: list = list(set(self.all_text))
             self.trans_map: dict = {'ntw': self.all_words, 'wtn': dict((x, i,) for i, x in enumerate(self.all_words))}
         await self.mk_chain()
