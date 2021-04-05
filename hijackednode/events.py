@@ -29,20 +29,6 @@ async def on_error(event_method, *args, **kwargs):
         print("|----------------- ERR_ END -----------------|")
 
 @bot.event
-async def on_message(message):
-    await EMT(message)
-    if message.author != bot.user:
-        await bot.process_commands(message)
-        cont = message.content.lower()
-        await talk(message, True) if (
-            not (cont.startswith("--"))
-            and not (cont.startswith("/"))
-            and not (cont.startswith("!"))
-            and not (cont.startswith("$"))
-            and bool(re.search("node", cont))
-        ) else None
-
-@bot.event
 async def on_ready():
     global logMe
     logMe = LogMe(bot, config)

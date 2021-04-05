@@ -155,9 +155,28 @@ async def talk(message, init: str = False):
     async with message.channel.typing():
         await message.channel.send(await talkbox.until_word(init=init))
 
+# BOT EVENTS
 @bot.event
 async def on_ready():
     await talkbox.reload_dict()
+
+@bot.event
+async def on_message(message):
+    for emote in config.EmoteNest:
+        for diff in emote[0]:
+            for reply in emote[1]:
+                if bool(re.search(diff, message.content.lower())):
+                    await message.add_reaction(reply)
+    if message.author != bot.user:
+        await bot.process_commands(message)
+        cont = message.content.lower()
+        await talk(message, True) if (
+            not (cont.startswith("--"))
+            and not (cont.startswith("/"))
+            and not (cont.startswith("!"))
+            and not (cont.startswith("$"))
+            and bool(re.search("node", cont))
+        ) else None
 
 def main():
     bot.run(config.TOKEN)

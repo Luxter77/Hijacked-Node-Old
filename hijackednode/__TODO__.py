@@ -6,12 +6,6 @@ import os
 
 from hijackednode.configuration import CONF0
 
-async def EMT(message: discord.Message, config: CONF0):
-    for emote in config.EmoteNest:
-        for diff in emote[0]:
-            for reply in emote[1]:
-                if bool(re.search(diff, message.content.lower())):
-                    await message.add_reaction(reply)
 
 # I stole this for someone's™ gitist
 async def long_sleep(arg):
