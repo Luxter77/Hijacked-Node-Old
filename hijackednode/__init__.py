@@ -117,7 +117,7 @@ async def imgSearch(ctx: commands.Context, *args):
 
 # Discord Comm
 @bot.command(pass_context=True)
-async def last_file(ctx):
+async def last_file(ctx: commands.Context):
     if os.name == "nt":
         await ctx.send("Windows bad, Linux good")  # Windows bad, linux good
     else:
@@ -125,7 +125,7 @@ async def last_file(ctx):
         await ctx.send(file=discord.File(os.path.join("var", "log", "nginx", "data.txt")))
 
 @bot.command(pass_context=True)
-async def ping(ctx):
+async def ping(ctx: commands.Context):
     async with ctx.typing():
         t_msg = await ctx.send("Pong!")
         t_ms = str(
@@ -135,7 +135,7 @@ async def ping(ctx):
 
 
 @bot.command(pass_context=True)
-async def punch(ctx, *args):
+async def punch(ctx: commands.Context, *args):
     async with ctx.typing():
         if ("node" in args[1:]) or bool(re.search(str(bot.user.id), "".join(args))):
             await ctx.send("Not gonna happen mate.")
@@ -144,16 +144,16 @@ async def punch(ctx, *args):
             await ctx.send("I obliterate " + to + " using: " + choice(config.WeapList) if ((ctx.author.id in config.SUPERUSER) or (ctx.guild.id in config.DevLab)) else ("I punch: " + " ".join(args) + "."))
 
 @bot.command(pass_context=True)
-async def say(ctx, *args):
+async def say(ctx: commands.Context, *args):
     async with ctx.typing():
         await ctx.send(" ".join(args))
 
 @bot.command(pass_context=True)
-async def talk(message, init: str = False):
+async def talk(ctx: commands.Context, init: str = False):
     if bool(init):
         init = init.split(' ')
-    async with message.channel.typing():
-        await message.channel.send(await talkbox.until_word(init=init))
+    async with ctx.channel.typing():
+        await ctx.channel.send(await talkbox.until_word(init=init))
 
 # BOT EVENTS
 @bot.event
@@ -161,7 +161,7 @@ async def on_ready():
     await talkbox.reload_dict()
 
 @bot.event
-async def on_message(message):
+async def on_message(message: discord.Message):
     for emote in config.EmoteNest:
         for diff in emote[0]:
             for reply in emote[1]:
@@ -170,13 +170,8 @@ async def on_message(message):
     if message.author != bot.user:
         await bot.process_commands(message)
         cont = message.content.lower()
-        await talk(message, True) if (
-            not (cont.startswith("--"))
-            and not (cont.startswith("/"))
-            and not (cont.startswith("!"))
-            and not (cont.startswith("$"))
-            and bool(re.search("node", cont))
-        ) else None
+        if (not (cont.startswith("--")) and not (cont.startswith("/")) and not (cont.startswith("!")) and not (cont.startswith("$")) and bool(re.search("node", cont))):
+            await talk(message)
 
 def main():
     bot.run(config.TOKEN)
