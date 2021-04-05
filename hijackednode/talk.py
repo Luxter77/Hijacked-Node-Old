@@ -172,8 +172,14 @@ class TalkBox:
         async with self.TRANS_LOCK:
             self.chain = chain
 
-    async def until_word(self, end_word: str = '.', until: int = 15, max_length: int = 20, primer: str = False, init: list = False) -> str:
+    async def until_word(self, end_word: str = '.', until: int = 10, max_length: int = 20, primer: str = False, init: list = False) -> str:
         # TODO: Move these hardcoded settings to the config file
+
+        if bool(randint(0, 1)):
+            until += randint(0, 1)
+        else:
+            until -= randint(0, 6)
+
         async with self.TRANS_LOCK:
             chain = deepcopy(self.chain)
             trans_map = deepcopy(self.trans_map)
@@ -196,6 +202,6 @@ class TalkBox:
         sms = trans_back(sms)
 
         if bool(init):
-            sms = ' '.join(init) + " " + ' '.join(sms.split())
+            sms = ' '.join(init) + " " + sms
 
-        return(sms)
+        return(' '.join(sms.split(' ')).lower().capitalize())
