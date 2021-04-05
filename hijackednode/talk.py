@@ -3,10 +3,8 @@ from random import choice, randint
 
 from .configuration import CONF0  # pylint: disable=relative-beyond-top-level
 from emoji import EMOJI_UNICODE_ENGLISH
-from tempfile import mktemp
 from copy import deepcopy
 from typing import List
-from glob import glob
 
 import subprocess as sp
 import unicodedata
@@ -20,19 +18,19 @@ class TalkBoxError(Exception):
 
 # define FPCAMHHPC = "fuck pythonic code, all my homies hate pythonic code - this post was made by the perl gang"
 
-def trans(text: str, ptq: str, memory: str) -> str:
+def trans(text: str, ptq: str) -> str:
     if os.name != "nt":  # windows bad linux good
         # FPCAMHHPC
-        process: sp.Popen = sp.Popen(["/usr/bin/apertium", ptq, "-u", "-m", memory], stdout=sp.PIPE, stdin=sp.PIPE)
+        process: sp.Popen = sp.Popen(["/usr/bin/apertium", ptq, "-u"], stdout=sp.PIPE, stdin=sp.PIPE)
         process.stdin.write(text.encode())
         text = process.communicate()[0].decode("utf-8")
     return text
 
-def trans_back(text: str, memory: str, org: str = 'es'):
+def trans_back(text: str, org: str = 'es'):
     if org == 'en':
-        return trans(trans(text, ptq='en-es', memory=memory), ptq='es-en', memory=memory)
+        return trans(trans(text, ptq='en-es'), ptq='es-en')
     elif org == 'es':
-        return trans(trans(text, ptq='es-en', memory=memory), ptq='en-es', memory=memory)
+        return trans(trans(text, ptq='es-en'), ptq='en-es')
     else:
         raise(Exception('LangNotSupportedError'))
 
@@ -50,7 +48,6 @@ class TextPipeLine:
 
     def __init__(self, config: CONF0):
         self.config: CONF0 = config
-        self.memory = config.memory
 
     def plex(self, text: str, direction: str = 'forward') -> str:
         # poor choice, but I don't care
@@ -84,9 +81,13 @@ class TextPipeLine:
                 chat_log   = json.load(corp_file)
                 proto_corp = list()
         except JSONDecodeError:
-            with open(os.path.join(self.config.PATH, "DB", "parrot.bkp.json"), 'r') as corp_file:
-                chat_log   = json.load(corp_file)
-                proto_corp = list()
+            try:
+                with open(os.path.join(self.config.PATH, "DB", "parrot.bkp.json"), 'r') as corp_file:
+                    chat_log   = json.load(corp_file)
+                    proto_corp = list()
+            except FileNotFoundError:
+                chat_log   = {'last_time': None}
+            proto_corp = list()
         except FileNotFoundError:
             chat_log   = {'last_time': None}
             proto_corp = list()
@@ -120,7 +121,6 @@ class TextPipeLine:
 
         text = self.plex(unicodedata.normalize("NFC", text)).lower().split()  # FPCAMHHPC
 
-        
         if (text[-1] == '.'):
             if (text[-2] == '.'):
                 if (text[-3] == '.'):
@@ -172,7 +172,7 @@ class TalkBox:
         async with self.TRANS_LOCK:
             self.chain = chain
 
-    async def until_word(self, end_word: str = '.', until: int = 15, max_length: int = 40, primer: str = False, init: list = False) -> str:
+    async def until_word(self, end_word: str = '.', until: int = 15, max_length: int = 20, primer: str = False, init: list = False) -> str:
         # TODO: Move these hardcoded settings to the config file
         async with self.TRANS_LOCK:
             chain = deepcopy(self.chain)
@@ -193,9 +193,9 @@ class TalkBox:
 
         sms = self.pipeline.plex(' '.join([trans_map['ntw'][word] for word in sms]), 'backward')
 
-        sms = trans_back(sms, memory=self.config.memory)
+        sms = trans_back(sms)
 
         if bool(init):
-            sms = ' '.join(init) + " " + sms
+            sms = ' '.join(init) + " " + ' '.join(sms.split())
 
         return(sms)

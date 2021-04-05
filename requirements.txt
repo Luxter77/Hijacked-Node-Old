@@ -1,7 +1,8 @@
-tqdm
-emoji
-numpy
-grequests
-discord.py
-fake_useragent
 beautifulsoup4
+fake_useragent
+discord.py
+grequests
+numpy
+emoji
+tqdm
+lxml
