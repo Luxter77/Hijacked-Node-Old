@@ -146,7 +146,13 @@ async def talk(message, line_len: commands.Greedy[int] = None, init: str = False
 
 @bot.event
 async def on_ready():
+    print("[ " + str(dt.datetime.now().timestamp()) + " ]")
+    print(str(bot.user) + " Connected to:")
+    for guild in bot.guilds:
+        print(" - [" + str(guild.id) + "]: " + str(guild.name) + ".")
+    await bot.change_presence(activity=discord.Game(name="Waking up..."))
     await talkbox.reload_dict()
+    await bot.change_presence(activity=discord.Game(name="Complex Numbers"))
 
 def main():
     bot.run(config.TOKEN)
