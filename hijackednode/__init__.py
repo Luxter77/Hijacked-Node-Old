@@ -117,9 +117,7 @@ async def last_file(ctx):
 async def ping(ctx):
     async with ctx.typing():
         t_msg = await ctx.send("Pong!")
-        t_ms = str(
-            round((t_msg.created_at.timestamp() - dt.datetime.now().timestamp()) / 1000)
-        )
+        t_ms = str(round((t_msg.created_at.timestamp() - dt.datetime.now().timestamp()) / 1000))
         await t_msg.edit(content="Pong! Took: " + t_ms + "ms.")
 
 
@@ -138,11 +136,11 @@ async def say(ctx, *args):
         await ctx.send(" ".join(args))
 
 @bot.command(pass_context=True)
-async def talk(message, line_len: commands.Greedy[int] = None, init: str = False):
-    if bool(init):
-        init = init.split(' ')
+async def talk(message, line_len: commands.Greedy[int] = None, *args: List[str] = False):
+    if not(bool(args)):
+        args = 
     async with message.channel.typing():
-        await message.channel.send(await talkbox.until_word(until=line_len, init=init))
+        await message.channel.send(await talkbox.until_word(until=line_len, init=args))
 
 @bot.event
 async def on_ready():
