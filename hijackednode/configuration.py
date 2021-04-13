@@ -102,7 +102,6 @@ class CONF0():
                  DoLoadFile: bool = True,
                  PrefBanLst: Set[str] = set(),
                  StephLogs: bool = False,
-                 memory: str = False,
                  ):
         self.TOKEN = TOKEN
         self.DevLab = DevLab
@@ -126,7 +125,6 @@ class CONF0():
         self.WeapList = WeapList
         self.PrefBanLst = PrefBanLst
         self.StephLogs = StephLogs
-        self.memory = memory
         try:
             self.load()
         except Exception:
@@ -172,7 +170,6 @@ class CONF0():
             self.WeapList = data.get('WeapList')
             self.PrefBanLst = data.get('PrefBanLst')
             self.StephLogs = data.get('StephLogs')
-            self.memory = data.get('memory')
         except FileNotFoundError:
             pass  # ex dee
         except Exception:

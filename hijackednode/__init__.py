@@ -19,7 +19,6 @@ from fake_useragent import UserAgent
 from tqdm.asyncio import tqdm as asynctqdm
 
 from discord.ext import commands
-from tqdm.auto import tqdm
 import datetime as dt
 import glob
 import json
@@ -28,29 +27,38 @@ import re
 
 from .image import bing_image
 
-async def pull_new_messages(last_time: dt.datetime = None):
-    with talkbox.CORPUS_LOCK:
-        messages_all = dict()
+# BOT COMMANDS
+@commands.cooldown(1, 120, commands.BucketType.user)
+@bot.command(pass_context=True)
+async def pull_new_messages(ctx: commands.Context):
+    if (talkbox.CORPUS_LOCK.locked()):
+        await ctx.send("I'm occupied right about now.")
+    else:
+        msg: discord.Message = await ctx.send('On it.')
+
         try:
-            with open(os.path.join(config.PATH, "DB", "parrot.json"), "rb") as parrot:
-                messages_all = json.load(parrot)
-            last_time = dt.datetime.fromtimestamp(messages_all.pop('last_time'))
-        except json.JSONDecodeError:
-            with open(os.path.join(config.PATH, "DB", "parrot.bkp.json"), "rb") as parrot:
-                messages_all = json.load(parrot)
+            async with talkbox.CORPUS_LOCK:
+                try:
+                    messages_all = json.load(open(os.path.join(config.PATH, "DB", "parrot.json")))
+                except json.JSONDecodeError:
+                    messages_all = json.load(open(os.path.join(config.PATH, "DB", "parrot.bkp.json")))
             last_time = dt.datetime.fromtimestamp(messages_all.pop('last_time'))
         except FileNotFoundError:
-            pass  # starting from scratch
+            messages_all = dict()  # starting from scratch
+            last_time = None
 
-        for guild in tqdm(bot.guilds):
+        now = dt.datetime.now()
+
+        messages_all['last_time'] = now.timestamp()
+
+        for guild in bot.guilds:
             if guild.id in config.GildExList:
                 continue
-            messages_all[str(guild.id)] = dict()
-            for channel in tqdm(guild.text_channels):
+            for channel in guild.text_channels:
                 if channel.id in config.ChanExList:
                     continue
                 try:
-                    async for message in asynctqdm(channel.history(limit=None, oldest_first=True, after=last_time)):
+                    async for message in asynctqdm(channel.history(limit=None, oldest_first=True, after=last_time, before=now), leave=False):
                         if message.type == discord.MessageType.default and not (message.author.id in config.UserExLixt):
                             try:
                                 messages_all[str(guild.id)][str(channel.id)].append(message.content)
@@ -62,14 +70,17 @@ async def pull_new_messages(last_time: dt.datetime = None):
                 except Exception:
                     pass  # This usually means that we cant read that channel; oh well, just pass
 
-        messages_all['last_time'] = dt.datetime.now().timestamp()
+        await msg.edit(content='Just a sec...')
 
-        with open(os.path.join(config.PATH, "DB", "parrot.json"), "rb") as parrot:
-            json.dump(messages_all, parrot)
-        with open(os.path.join(config.PATH, "DB", "parrot.bkp.json"), "rb") as parrot:
-            json.dump(messages_all, parrot)
+        async with talkbox.CORPUS_LOCK:
+            json.dump(messages_all, open(os.path.join(config.PATH, "DB", "parrot.json"),     "w"), indent=4, sort_keys=True)
+            json.dump(messages_all, open(os.path.join(config.PATH, "DB", "parrot.bkp.json"), "w"), indent=4, sort_keys=True)
 
-# BOT COMMANDS
+        await msg.edit(content='One last thing...')
+
+        await talkbox.reload_dict()
+
+        await msg.edit(content='Synchronization done.')
 
 @commands.cooldown(2, 15, commands.BucketType.user)
 @bot.command(pass_context=True)
@@ -106,7 +117,7 @@ async def imgSearch(ctx: commands.Context, *args):
 
 # Discord Comm
 @bot.command(pass_context=True)
-async def last_file(ctx):
+async def last_file(ctx: commands.Context):
     if os.name == "nt":
         await ctx.send("Windows bad, Linux good")  # Windows bad, linux good
     else:
@@ -114,7 +125,7 @@ async def last_file(ctx):
         await ctx.send(file=discord.File(os.path.join("var", "log", "nginx", "data.txt")))
 
 @bot.command(pass_context=True)
-async def ping(ctx):
+async def ping(ctx: commands.Context):
     async with ctx.typing():
         t_msg = await ctx.send("Pong!")
         t_ms = str(round((t_msg.created_at.timestamp() - dt.datetime.now().timestamp()) / 1000))
@@ -122,7 +133,7 @@ async def ping(ctx):
 
 
 @bot.command(pass_context=True)
-async def punch(ctx, *args):
+async def punch(ctx: commands.Context, *args):
     async with ctx.typing():
         if ("node" in args[1:]) or bool(re.search(str(bot.user.id), "".join(args))):
             await ctx.send("Not gonna happen mate.")
@@ -131,17 +142,19 @@ async def punch(ctx, *args):
             await ctx.send("I obliterate " + to + " using: " + choice(config.WeapList) if ((ctx.author.id in config.SUPERUSER) or (ctx.guild.id in config.DevLab)) else ("I punch: " + " ".join(args) + "."))
 
 @bot.command(pass_context=True)
-async def say(ctx, *args):
+async def say(ctx: commands.Context, *args):
     async with ctx.typing():
         await ctx.send(" ".join(args))
 
 @bot.command(pass_context=True)
-async def talk(message, line_len: commands.Greedy[int] = None, *args: List[str] = False):
-    if not(bool(args)):
-        args = 
-    async with message.channel.typing():
-        await message.channel.send(await talkbox.until_word(until=line_len, init=args))
 
+async def talk(ctx: commands.Context, init: str = False):
+    if bool(init):
+        init = init.split(' ')
+    async with ctx.channel.typing():
+        await ctx.channel.send(await talkbox.until_word(init=init))
+
+# BOT EVENTS
 @bot.event
 async def on_ready():
     print("[ " + str(dt.datetime.now().timestamp()) + " ]")
@@ -151,6 +164,19 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game(name="Waking up..."))
     await talkbox.reload_dict()
     await bot.change_presence(activity=discord.Game(name="Complex Numbers"))
+
+@bot.event
+async def on_message(message: discord.Message):
+    for emote in config.EmoteNest:
+        for diff in emote[0]:
+            for reply in emote[1]:
+                if bool(re.search(diff, message.content.lower())):
+                    await message.add_reaction(reply)
+    if message.author != bot.user:
+        await bot.process_commands(message)
+        cont = message.content.lower()
+        if (not (cont.startswith("--")) and not (cont.startswith("/")) and not (cont.startswith("!")) and not (cont.startswith("$")) and bool(re.search("node", cont))):
+            await talk(message)
 
 def main():
     bot.run(config.TOKEN)

@@ -135,7 +135,6 @@ dmypy.json
 *.lst
 *config.py
 !requirements.txt
-!.*template.configuration.py
 .*/DB/*
 
 # vscode

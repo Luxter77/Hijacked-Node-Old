@@ -3,10 +3,8 @@ from random import choice, randint
 
 from .configuration import CONF0  # pylint: disable=relative-beyond-top-level
 from emoji import EMOJI_UNICODE_ENGLISH
-from tempfile import mktemp
 from copy import deepcopy
 from typing import List
-from glob import glob
 
 import subprocess as sp
 import unicodedata
@@ -20,23 +18,19 @@ class TalkBoxError(Exception):
 
 # define FPCAMHHPC = "fuck pythonic code, all my homies hate pythonic code - this post was made by the perl gang"
 
-def also_print(thing: object):
-    print(str(type(thing)) + ': ' + repr(thing))
-    return thing
-
-def trans(text: str, ptq: str, memory: str) -> str:
+def trans(text: str, ptq: str) -> str:
     if os.name != "nt":  # windows bad linux good
         # FPCAMHHPC
-        process: sp.Popen = sp.Popen(["/usr/bin/apertium", ptq, "-u", "-m", memory], stdout=sp.PIPE, stdin=sp.PIPE)
+        process: sp.Popen = sp.Popen(["/usr/bin/apertium", ptq, "-u"], stdout=sp.PIPE, stdin=sp.PIPE)
         process.stdin.write(text.encode())
         text = process.communicate()[0].decode("utf-8")
     return text
 
-def trans_back(text: str, memory:str, org: str = 'es-en'):
+def trans_back(text: str, org: str = 'es'):
     if org == 'en':
-        return trans(trans(text, 'en-es'), org='es-en', memory=memory)
+        return trans(trans(text, ptq='en-es'), ptq='es-en')
     elif org == 'es':
-        return trans(trans(text, 'es-en'), org='en-es', memory=memory)
+        return trans(trans(text, ptq='es-en'), ptq='en-es')
     else:
         raise(Exception('LangNotSupportedError'))
 
@@ -54,7 +48,6 @@ class TextPipeLine:
 
     def __init__(self, config: CONF0):
         self.config: CONF0 = config
-        self.memory = config.memory
 
     def plex(self, text: str, direction: str = 'forward') -> str:
         # poor choice, but I don't care
@@ -72,7 +65,7 @@ class TextPipeLine:
             return text
 
     def checks(self, skala: str) -> bool:
-        if (not(skala) or (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
+        if ((len(skala) < 6) or (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
             return False
         else:
             for banned in self.config.PrefBanLst:
@@ -88,9 +81,13 @@ class TextPipeLine:
                 chat_log   = json.load(corp_file)
                 proto_corp = list()
         except JSONDecodeError:
-            with open(os.path.join(self.config.PATH, "DB", "parrot.bkp.json"), 'r') as corp_file:
-                chat_log   = json.load(corp_file)
-                proto_corp = list()
+            try:
+                with open(os.path.join(self.config.PATH, "DB", "parrot.bkp.json"), 'r') as corp_file:
+                    chat_log   = json.load(corp_file)
+                    proto_corp = list()
+            except FileNotFoundError:
+                chat_log   = {'last_time': None}
+            proto_corp = list()
         except FileNotFoundError:
             chat_log   = {'last_time': None}
             proto_corp = list()
@@ -109,7 +106,7 @@ class TextPipeLine:
         proto_corp = list()
         for steph_path in self.config.StephLogs:
             with open(steph_path, "r", encoding="utf-8") as steph_file:
-                for line in (trans_back(steph_file.read(), memory=self.memory)).splitlines():
+                for line in steph_file.readlines():
                     line = line.lower()
                     if self.checks(line):
                         proto_corp += await self.parse_message(line)
@@ -122,16 +119,21 @@ class TextPipeLine:
             if(len(word) > 14):
                 text.replace(word, '')
 
-        text = self.plex(await unicodedata.normalize("NFC", text)).lower().split()  # FPCAMHHPC
+        text = self.plex(unicodedata.normalize("NFC", text)).lower().split()  # FPCAMHHPC
 
         if (text[-1] == '.'):
             if (text[-2] == '.'):
                 if (text[-3] == '.'):
-                    return text[:-2]
+                    text = text[:-2]
                 else:
-                    return text[:-1]
+                    text = text[:-1]
         else:
-            return text + ['.']
+            text = text + ['.']
+
+        if bool(text):
+            return text
+        else:
+            return []
 
 class TalkBox:
     'This is where the magic happens'
@@ -149,7 +151,6 @@ class TalkBox:
         async with self.TRANS_LOCK:
             async with self.CORPUS_LOCK:
                 self.all_text:  list = (await self.pipeline.load_from_steph_logs()) + (await self.pipeline.load_from_discord_dump())
-            print(self.all_text)
             self.all_words: list = list(set(self.all_text))
             self.trans_map: dict = {'ntw': self.all_words, 'wtn': dict((x, i,) for i, x in enumerate(self.all_words))}
         await self.mk_chain()
@@ -171,8 +172,14 @@ class TalkBox:
         async with self.TRANS_LOCK:
             self.chain = chain
 
-    async def until_word(self, end_word: str = '.', until: int = 15, max_length: int = 40, primer: str = False, init: list = False) -> str:
+    async def until_word(self, end_word: str = '.', until: int = 5, max_length: int = 10, primer: str = False, init: list = False) -> str:
         # TODO: Move these hardcoded settings to the config file
+
+        if bool(randint(0, 1)):
+            until += randint(0, 2)
+        else:
+            until = max(until - randint(0, 6), until)
+
         async with self.TRANS_LOCK:
             chain = deepcopy(self.chain)
             trans_map = deepcopy(self.trans_map)
@@ -192,9 +199,9 @@ class TalkBox:
 
         sms = self.pipeline.plex(' '.join([trans_map['ntw'][word] for word in sms]), 'backward')
 
-        sms = trans_back(sms, memory=self.config.memory)
+        sms = trans_back(sms)
 
         if bool(init):
             sms = ' '.join(init) + " " + sms
 
-        return(sms)
+        return(' '.join(x for x in sms.split(' ') if bool(x)).lower().capitalize())
