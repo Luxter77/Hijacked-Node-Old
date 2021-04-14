@@ -120,11 +120,12 @@ async def imgSearch(ctx: commands.Context, *args):
 # Discord Comm
 @bot.command(pass_context=True)
 async def last_file(ctx: commands.Context):
+    # TODO: DOCUMENT THIS FUNCTION AND MAKE IT ACTUALLY PORTABLE
     if os.name == "nt":
         await ctx.send("Windows bad, Linux good")  # Windows bad, linux good
     else:
-        await ctx.send("Last modification date: " + str(dt.datetime.utcfromtimestamp(os.path.getmtime(os.path.join(os.sep + "var", "log", "nginx", "data.txt"))).strftime("%Y-%m-%d %H:%M:%S")))
-        await ctx.send(file=discord.File(os.path.join(os.sep + "var", "log", "nginx", "data.txt")))
+        nginx_dir = os.path.join(os.sep + "var", "log", "nginx")
+        await ctx.send("Last modification date: " + str(dt.datetime.utcfromtimestamp(os.path.getmtime(os.path.join(nginx_dir, "data.txt"))).strftime("%Y-%m-%d %H:%M:%S") + " by: " + open(os.path.join(nginx_dir, "lastime.infopog")).read()), file=discord.File(os.path.join(nginx_dir, "data.txt")))
 
 @bot.command(pass_context=True)
 async def ping(ctx: commands.Context):
