@@ -187,8 +187,12 @@ async def on_ready():
     print("[ " + str(dt.datetime.now().timestamp()) + " ]")
     print(str(bot.user) + " Connected to:")
     for guild in bot.guilds:
+        if guild.id in config.GildExList:
+            continue
         print(" - [" + str(guild.id) + "]: " + str(guild.name) + ".")
         for channel in guild.channels:
+            if channel.id in config.ChanExList:
+                continue
             print("\t- [" + str(channel.id) + "]: " + str(channel.name) + ".")
     await bot.change_presence(activity=discord.Game(name="Waking up..."))
     await talkbox.reload_dict()
