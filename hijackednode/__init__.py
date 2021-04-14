@@ -124,7 +124,7 @@ async def last_file(ctx: commands.Context):
         await ctx.send("Windows bad, Linux good")  # Windows bad, linux good
     else:
         await ctx.send("Last modification date: " + str(dt.datetime.utcfromtimestamp(os.path.getmtime(os.path.join("var", "log", "nginx", "data.txt"))).strftime("%Y-%m-%d %H:%M:%S") + " by: " + str(open(os.path.join("var", "log", "nginx", "lastime.infopog")).read())))
-        await ctx.send(file=discord.File(os.path.join("var", "log", "nginx", "data.txt")))
+        await ctx.send(file=discord.File(os.path.join(os.sep + "var", "log", "nginx", "data.txt")))
 
 @bot.command(pass_context=True)
 async def ping(ctx: commands.Context):
