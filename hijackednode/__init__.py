@@ -156,7 +156,7 @@ async def talk(ctx: commands.Context, init: str = False):
 
 # BOT EVENTS
 @bot.event
-async def on_command_error(context: discord.context, exception: Exception, *args: list, **kwargs: dict):
+async def on_command_error(context: commands.Context, exception: Exception, *args: list, **kwargs: dict):
     print(file=sys.stderr)
     print(f"Ignoring exception in command {context.command}:", file=sys.stderr)
     traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
@@ -172,7 +172,7 @@ async def on_command_error(context: discord.context, exception: Exception, *args
 @bot.event
 async def on_error(event_method, *args: list, **kwargs: dict):
     print(file=sys.stderr)
-    print(" Ignoring exception in {}".format(event_method), file=sys.stderr)
+    print(f" Ignoring exception in {event_method}", file=sys.stderr)
     traceback.print_exc()
     if args:
         print(f"[args]: {args.__repr__()}", file=sys.stderr)
