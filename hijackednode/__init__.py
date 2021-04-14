@@ -20,8 +20,10 @@ from tqdm.asyncio import tqdm as asynctqdm
 
 from discord.ext import commands
 import datetime as dt
+import traceback
 import glob
 import json
+import sys
 import os
 import re
 
@@ -147,7 +149,6 @@ async def say(ctx: commands.Context, *args):
         await ctx.send(" ".join(args))
 
 @bot.command(pass_context=True)
-
 async def talk(ctx: commands.Context, init: str = False):
     if bool(init):
         init = init.split(' ')
@@ -168,7 +169,7 @@ async def on_command_error(context: commands.Context, exception: Exception, *arg
     if kwargs:
         print(f"[kwargs]: {kwargs.__repr__()}", file=sys.stderr)
     print(file=sys.stderr)
-    
+
 @bot.event
 async def on_error(event_method, *args: list, **kwargs: dict):
     print(file=sys.stderr)
