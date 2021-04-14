@@ -194,6 +194,7 @@ async def on_ready():
             if channel.id in config.ChanExList:
                 continue
             print("\t- [" + str(channel.id) + "]: " + str(channel.name) + ".")
+    print()
     await bot.change_presence(activity=discord.Game(name="Waking up..."))
     await talkbox.reload_dict()
     await bot.change_presence(activity=discord.Game(name="Complex Numbers"))
