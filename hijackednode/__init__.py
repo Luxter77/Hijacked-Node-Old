@@ -188,6 +188,8 @@ async def on_ready():
     print(str(bot.user) + " Connected to:")
     for guild in bot.guilds:
         print(" - [" + str(guild.id) + "]: " + str(guild.name) + ".")
+        for channel in guild.channels:
+            print("\t- [" + str(channel.id) + "]: " + str(channel.name) + ".")
     await bot.change_presence(activity=discord.Game(name="Waking up..."))
     await talkbox.reload_dict()
     await bot.change_presence(activity=discord.Game(name="Complex Numbers"))
