@@ -184,16 +184,19 @@ async def on_error(event_method, *args: list, **kwargs: dict):
 
 @bot.event
 async def on_ready():
-    print("[ " + str(dt.datetime.now().timestamp()) + " ]")
+    print("[BOT " + str(dt.datetime.now().timestamp()) + " ]")
     print(str(bot.user) + " Connected to:")
     for guild in bot.guilds:
         if guild.id in config.GildExList:
             continue
-        print(" - [" + str(guild.id) + "]: " + str(guild.name) + ".")
-        for channel in guild.channels:
-            if channel.id in config.ChanExList:
-                continue
-            print("\t- [" + str(channel.id) + "]: " + str(channel.name) + ".")
+        print()
+        print(" - [g" + str(guild.id) + "]: " + str(guild.name) + ".")
+        for channel in guild.text_channels:
+            if channel.id in config.ChanExList: continue
+            print("\t- [t" + str(channel.id) + "]: " + str(channel.name) + ".")
+        for channel in guild.voice_channels:
+            if channel.id in config.ChanExList: continue
+            print("\t- [v" + str(channel.id) + "]: " + str(channel.name) + ".")
     print()
     await bot.change_presence(activity=discord.Game(name="Waking up..."))
     await talkbox.reload_dict()
