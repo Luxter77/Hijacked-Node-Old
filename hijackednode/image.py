@@ -9,17 +9,16 @@ import json
 import sys
 import os
 
+sys.setrecursionlimit(10000)
 
 # I shamelessly stole this from _somewhere_ ( and I don't remember where lol)
 # but it was open\n source and staff GPL-2 or GPL-3 at least :shrug:
-async def bing_image(query, delta, config: CONF0):
+async def bing_image(query: str, delta: int, config: CONF0):
     os.makedirs(os.path.join(config.PATH, "DB", "img", "ext", query), exist_ok=True)
-    sys.setrecursionlimit(10000000)
     page_counter, link_counter, download_image_delta = 0, 0, 0
     while download_image_delta < delta:
         ua = UserAgent(verify_ssl=False)
-        headers = {"User-Agent": ua.random}
-        payload = (("q", str(query)), ("first", page_counter), ("adlt", False))
+        headers, payload = {"User-Agent": ua.random}, {"q": query, "first": page_counter, "adlt": False}
         source = requests.get("https://www.bing.com/images/async", params=payload, headers=headers).content
         soup = BeautifulSoup(str(source).replace("\r", "").replace("\n", ""), "lxml")
         for a in soup.find_all("a", class_="iusc"):

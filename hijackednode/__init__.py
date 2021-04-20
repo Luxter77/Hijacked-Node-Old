@@ -90,35 +90,13 @@ async def pull_new_messages(ctx: commands.Context):
 
 @commands.cooldown(2, 15, commands.BucketType.user)
 @bot.command(pass_context=True, name='imgSearch', description='Search for images online and send the first match')
-async def imgSearch(ctx: commands.Context, *args):
+async def imgSearch(ctx: commands.Context, amount: int = 1, *query):
     async with ctx.message.channel.typing():
-        if len(args) == 0:
-            q, n = "Cursed Image Meme", 1
-        elif len(args) == 1:
-            q, n = "".join(args), 1
-        else:
-            # OH GOD THIS IS PAINFUL
-            try:
-                n, is_first = int(args[0]), True
-            except Exception:
-                is_first = False
-
-            try:
-                n, is_last = (int(args[-1]), True) if not (is_first) else (1, False)
-            except Exception:
-                is_last = False
-
-            if not(is_last) and not(is_first):
-                n, q = 1, str(" ".join(args))
-            else:
-                q = str(" ".join(args[:-1])) if (is_last) else str(" ".join(args[1:]))
-
-        await bing_image(q, n, config)
-
-        for x in glob.glob(os.path.join(config.PATH, "DB", "img", "ext", q, "Scrapper_*")):
+        await bing_image(query, amount, config)
+        for x in glob.glob(os.path.join(config.PATH, "DB", "img", "ext", query, "Scrapper_*")):
             await ctx.send(file=discord.File(x))
             os.remove(str(x))
-            os.rmdir(os.path.join(config.PATH, "DB", "img", "ext", q))
+            os.rmdir(os.path.join(config.PATH, "DB", "img", "ext", query))
 
 @commands.cooldown(1, 10, commands.BucketType.guild)
 @bot.command(pass_context=True, name='last_file', description='Get last file from upload server.')

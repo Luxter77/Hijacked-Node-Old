@@ -15,12 +15,17 @@
         "Lixt",
         "Steph",
         "Weap",
+        "adlt",
         "aiofile",
         "apertium",
         "asynctqdm",
+        "exif",
         "gevent",
         "infopog",
         "isdisjoint",
+        "iusc",
+        "jfif",
+        "murl",
         "plex",
         "unplex"
     ]
