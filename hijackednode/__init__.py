@@ -134,16 +134,16 @@ async def last_file(ctx: commands.Context):
 @bot.command(pass_context=True, name='ping', description='Checks ping between bot and discord server')
 async def ping(ctx: commands.Context, times: int = 1):
     async with ctx.typing():
-        t, t_ms, t_msg = '', [], (await ctx.send('Pong'))
+        t, t_ms, t_msg = '', [], (await ctx.send(content='Pong'))
 
-        await t_msg.edit("Pong.")
+        await t_msg.edit(content="Pong.")
 
         for _ in range(min(6, max(int(times)))):
             t_ms.append(t_msg.edited_at() - (dt.datetime.now().timestamp() / 1000))
             t += '.'
-            await t_msg.edit("Pong" + t)
+            await t_msg.edit(content="Pong" + t)
 
-        await t_msg.edit(content="Pong! Took: " + str(round(number=(sum(t_ms) / len(t_ms)), ndigits=3)) + "ms.")
+        await t_msg.edit(content=("Pong! Took: " + str(round(number=(sum(t_ms) / len(t_ms)), ndigits=3)) + "ms."))
 
 @bot.command(pass_context=True, name='punch', description='Hurts <someone> using <something>')
 async def punch(ctx: commands.Context, someone: discord.Member, *using):
