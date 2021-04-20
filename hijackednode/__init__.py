@@ -135,15 +135,16 @@ async def last_file(ctx: commands.Context):
 async def ping(ctx: commands.Context, times: int = 1):
     async with ctx.typing():
         t, t_ms, t_msg = '', [], (await ctx.send(content='Pong'))
+        t_msg: discord.Message
 
         await t_msg.edit(content="Pong.")
 
         for _ in range(min(6, max(int(times), 1))):
-            t_ms.append(t_msg.edited_at() - (dt.datetime.now().timestamp() / 1000))
+            t_ms.append(t_msg.edited_at.timestamp() - (dt.datetime.now().timestamp()))
             t += '.'
             await t_msg.edit(content="Pong" + t)
 
-        await t_msg.edit(content=("Pong! Took: " + str(round(number=(sum(t_ms) / len(t_ms)), ndigits=3)) + "ms."))
+        await t_msg.edit(content=("Pong! Took: " + str(round(number=(sum(t_ms) / (len(t_ms) * 1000)), ndigits=3)) + "ms."))
 
 @bot.command(pass_context=True, name='punch', description='Hurts <someone> using <something>')
 async def punch(ctx: commands.Context, someone: discord.Member, *using):
