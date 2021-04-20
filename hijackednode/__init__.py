@@ -92,6 +92,7 @@ async def pull_new_messages(ctx: commands.Context):
 @bot.command(pass_context=True, name='imgSearch', description='Search for images online and send the first match')
 async def imgSearch(ctx: commands.Context, amount: int = 1, *query):
     async with ctx.message.channel.typing():
+        query = ' '.join(query)
         await bing_image(query, amount, config)
         for x in glob.glob(os.path.join(config.PATH, "DB", "img", "ext", query, "Scrapper_*")):
             await ctx.send(file=discord.File(x))
@@ -128,13 +129,13 @@ async def ping(ctx: commands.Context, times: int = 1):
 async def punch(ctx: commands.Context, someone: discord.Member, *using):
     async with ctx.typing():
         if (bot.user == someone):
-            await ctx.send(f"I obliterate {ctx.author.mention}" + ((' using: ' + ' '.join(using)) if bool(using) else (choice(config.WeapList) + '.')))
+            await ctx.send(f"I obliterate {ctx.author.mention} using: " + ((' '.join(using)) if bool(using) else (choice(config.WeapList) + '.')))
         else:
             if bool(someone):
                 if ((ctx.author.id in config.SUPERUSER) or (ctx.guild.id in config.DevLab)):
-                    await ctx.send(f"I obliterate {someone.mention}" + ((' using: ' + ' '.join(using)) if bool(using) else (choice(config.WeapList) + '.')))
+                    await ctx.send(f"I obliterate {someone.mention} using: " + ((' '.join(using)) if bool(using) else (choice(config.WeapList) + '.')))
                 else:
-                    await ctx.send(f"I punch {someone.mention}"      + ((' using: ' + ' '.join(using)) if bool(using) else ('.')))
+                    await ctx.send(f"I punch {someone.mention}" + ((' using: ' + ' '.join(using)) if bool(using) else ('.')))
 
 @bot.command(pass_context=True, name='say', description='>Title')
 async def say(ctx: commands.Context, *words):
