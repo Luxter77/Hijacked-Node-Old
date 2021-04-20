@@ -138,7 +138,7 @@ async def ping(ctx: commands.Context, times: int = 1):
 
         await t_msg.edit(content="Pong.")
 
-        for _ in range(min(6, max(int(times)))):
+        for _ in range(min(6, max(int(times), 1))):
             t_ms.append(t_msg.edited_at() - (dt.datetime.now().timestamp() / 1000))
             t += '.'
             await t_msg.edit(content="Pong" + t)
