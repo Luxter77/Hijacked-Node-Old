@@ -9,12 +9,9 @@ from discord.ext.commands import Bot
 from .configuration import CONF0
 from .talk import TalkBox
 
-config = CONF0()
-bot = Bot(command_prefix=config.CommandPrefix, case_insensitive=True)
-talkbox = TalkBox(config)
-
-from random import choice, randint
 from fake_useragent import UserAgent
+from random import choice, randint
+from typing import List
 
 from tqdm.asyncio import tqdm as asynctqdm
 
@@ -29,9 +26,16 @@ import re
 
 from .image import bing_image
 
+
+# INIT
+config = CONF0()
+bot = Bot(command_prefix=config.CommandPrefix, case_insensitive=True)
+talkbox = TalkBox(config)
+
+
 # BOT COMMANDS
 @commands.cooldown(1, 120, commands.BucketType.user)
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, name='Pull new messages', description='Pulls all new messages from discord servers not already on database')
 async def pull_new_messages(ctx: commands.Context):
     if (talkbox.CORPUS_LOCK.locked()):
         await ctx.send("I'm occupied right about now.")
@@ -85,7 +89,7 @@ async def pull_new_messages(ctx: commands.Context):
         await msg.edit(content='Synchronization done.')
 
 @commands.cooldown(2, 15, commands.BucketType.user)
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, name='Img Search', description='Search for images online and send the first match')
 async def imgSearch(ctx: commands.Context, *args):
     async with ctx.message.channel.typing():
         if len(args) == 0:
@@ -116,9 +120,8 @@ async def imgSearch(ctx: commands.Context, *args):
             os.remove(str(x))
             os.rmdir(os.path.join(config.PATH, "DB", "img", "ext", q))
 
-
-# Discord Comm
-@bot.command(pass_context=True)
+@commands.cooldown(1, 10, commands.BucketType.guild)
+@bot.command(pass_context=True, name='G.L.F.', description='Get last file from upload server.')
 async def last_file(ctx: commands.Context):
     # TODO: DOCUMENT THIS FUNCTION AND MAKE IT ACTUALLY PORTABLE
     if os.name == "nt":
@@ -127,34 +130,45 @@ async def last_file(ctx: commands.Context):
         nginx_dir = os.path.join(os.sep + "var", "log", "nginx")
         await ctx.send("Last modification date: " + str(dt.datetime.utcfromtimestamp(os.path.getmtime(os.path.join(nginx_dir, "data.txt"))).strftime("%Y-%m-%d %H:%M:%S") + " by: " + open(os.path.join(nginx_dir, "lastime.infopog")).read()), file=discord.File(os.path.join(nginx_dir, "data.txt")))
 
-@bot.command(pass_context=True)
-async def ping(ctx: commands.Context):
+@commands.cooldown(2, 30, commands.BucketType.guild)
+@bot.command(pass_context=True, name='Ping', description='Checks ping between bot and discord server')
+async def ping(ctx: commands.Context, times: int = 1):
     async with ctx.typing():
-        t_msg = await ctx.send("Pong!")
-        t_ms = str(round((t_msg.created_at.timestamp() - dt.datetime.now().timestamp()) / 1000))
-        await t_msg.edit(content="Pong! Took: " + t_ms + "ms.")
+        t, t_ms, t_msg = '', [], (await ctx.send('Pong'))
 
+        await t_msg.edit("Pong.")
 
-@bot.command(pass_context=True)
-async def punch(ctx: commands.Context, *args):
+        for _ in range(min(6, max(int(times)))):
+            t_ms.append(t_msg.edited_at() - (dt.datetime.now().timestamp() / 1000))
+            t += '.'
+            await t_msg.edit("Pong" + t)
+
+        await t_msg.edit(content="Pong! Took: " + str(round(number=(sum(t_ms) / len(t_ms)), ndigits=3)) + "ms.")
+
+@bot.command(pass_context=True, name='Punch', description='Hurts <someone> using <something>')
+async def punch(ctx: commands.Context, someone: discord.Member, *using):
     async with ctx.typing():
-        if ("node" in args[1:]) or bool(re.search(str(bot.user.id), "".join(args))):
-            await ctx.send("Not gonna happen mate.")
+        if (bot.user == someone):
+            await ctx.send(f"I obliterate {ctx.author.mention}" + ((' using: ' + ' '.join(using)) if bool(using) else (choice(config.WeapList) + '.')))
         else:
-            to = " ".join(args) if (len(args) > 0) else ctx.author.mention
-            await ctx.send("I obliterate " + to + " using: " + choice(config.WeapList) if ((ctx.author.id in config.SUPERUSER) or (ctx.guild.id in config.DevLab)) else ("I punch: " + " ".join(args) + "."))
+            if bool(someone):
+                if ((ctx.author.id in config.SUPERUSER) or (ctx.guild.id in config.DevLab)):
+                    await ctx.send(f"I obliterate {someone.mention}" + ((' using: ' + ' '.join(using)) if bool(using) else (choice(config.WeapList) + '.')))
+                else:
+                    await ctx.send(f"I punch {someone.mention}"      + ((' using: ' + ' '.join(using)) if bool(using) else ('.')))
 
-@bot.command(pass_context=True)
-async def say(ctx: commands.Context, *args):
+@bot.command(pass_context=True, name='Say', description='>Title')
+async def say(ctx: commands.Context, *words):
     async with ctx.typing():
-        await ctx.send(" ".join(args))
+        await ctx.send(" ".join(words))
 
-@bot.command(pass_context=True)
-async def talk(ctx: commands.Context, init: str = False):
-    if bool(init):
-        init = init.split(' ')
+@bot.command(pass_context=True, name='Talk', description='Generates something from the texts on database')
+async def talk(ctx: commands.Context, *base):
     async with ctx.channel.typing():
-        await ctx.channel.send(await talkbox.until_word(init=init))
+        if len(base) == 1:
+            await ctx.channel.send(await talkbox.until_word(primer=base[0]))
+        else:
+            await ctx.channel.send(await talkbox.until_word(init=base))
 
 # BOT EVENTS
 @bot.event
@@ -181,7 +195,6 @@ async def on_error(event_method, *args: list, **kwargs: dict):
     if kwargs:
         print(f"[kwargs]: {kwargs.__repr__()}", file=sys.stderr)
     print(file=sys.stderr)
-
 
 @bot.event
 async def on_ready():
@@ -225,4 +238,4 @@ def main():
     bot.run(config.TOKEN)
 
 if __name__ == '__main__':
-    main()
+    main()  # RUN!
