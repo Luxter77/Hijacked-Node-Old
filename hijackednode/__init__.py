@@ -159,9 +159,9 @@ async def on_command_error(context: commands.Context, exception: Exception, *arg
 
     print(f"[message]: {context.message.content}", file=sys.stderr)
 
-    if args:
+    if bool(args):
         print(f"[args]: {args.__repr__()}", file=sys.stderr)
-    if kwargs:
+    if bool(kwargs):
         print(f"[kwargs]: {kwargs.__repr__()}", file=sys.stderr)
     print(file=sys.stderr)
 
