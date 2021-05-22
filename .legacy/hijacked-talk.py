@@ -298,8 +298,6 @@ class TextPipeLine:
 class TalkBox:
     'This is where the magic happens'
 
-    PULL_LOCK   = asyncio.Lock()  # Lock for pulling messages from discord servers
-    TRANS_LOCK  = asyncio.Lock()  # Lock for trans_map AND all_text AND all_words AND chain
     CORPUS_LOCK = asyncio.Lock()  # Lock for the files on disk that hold the corpus
 
     def __init__(self):
@@ -308,10 +306,12 @@ class TalkBox:
         os.makedirs(os.path.join(self.config.PATH, "DB"), exist_ok=True)
         asyncio.run(self.load())
 
+    def talk(self):
+        return(asyncio.run(self.async_talk()))
+
     async def load(self):
-        async with self.TRANS_LOCK:
-            async with self.CORPUS_LOCK:
-                all_text: list = (await self.pipeline.load_from_steph_logs()) + (await self.pipeline.load_from_discord_dump())
+        async with self.CORPUS_LOCK:
+            all_text: list = (await self.pipeline.load_from_steph_logs()) + (await self.pipeline.load_from_discord_dump())
             all_words: list = list(set(all_text))
             trans_map: dict = {'ntw': all_words, 'wtn': dict((x, i,) for i, x in enumerate(all_words))}
         chain = dict()
@@ -326,16 +326,18 @@ class TalkBox:
             finally:
                 t_primer = word
 
-        self.chain = chain
-        self.all_text = all_text
-        self.all_words = all_words
-        self.trans_map = trans_map
+        async with self.CORPUS_LOCK:
+            self.chain = chain
+            self.all_text = all_text
+            self.all_words = all_words
+            self.trans_map = trans_map
 
-    def talk(self, end_word: str = '.', until: int = 5, max_length: int = 10, primer: str = False, init: List[str] = False) -> str:
-        chain     = self.chain
-        all_text  = self.all_text
-        all_words = self.all_words
-        trans_map = self.trans_map
+    async def async_talk(self, end_word: str = '.', until: int = 5, max_length: int = 10, primer: str = False, init: List[str] = False) -> str:
+        async with self.CORPUS_LOCK:
+            chain     = self.chain
+            all_text  = self.all_text
+            all_words = self.all_words
+            trans_map = self.trans_map
 
         if bool(randint(0, 1)):
             until += randint(0, 2)
@@ -364,12 +366,17 @@ class TalkBox:
 
         return(' '.join(x for x in sms.split(' ') if bool(x)).lower().capitalize())
 
+
 talkbox = TalkBox()
 app = Flask(__name__)
 
 @app.route("/talk")
 def talk():
     return(talkbox.talk())
+
+@app.route("/load")
+def load():
+    return(talkbox.load())
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
