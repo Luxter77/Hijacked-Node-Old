@@ -205,3 +205,9 @@ class TalkBox:
             sms = ' '.join(init[:-1]) + " " + sms
 
         return(' '.join(x for x in sms.split(' ') if bool(x)).lower().capitalize())
+
+    def sync_until_word(self, end_word: str = '.', until: int = 5, max_length: int = 10, primer: str = False, init: List[str] = False) -> str:
+        return(asyncio.run(self.until_word(self, end_word=end_word, until=until, max_length=max_length, primer=primer, init=init)))
+
+if __name__ == "__main__":
+    print(talkbox(CONF0()).sync_until_word())

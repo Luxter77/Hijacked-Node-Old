@@ -218,4 +218,6 @@ def main():
     bot.run(config.TOKEN)
 
 if __name__ == '__main__':
+    if sys.argv[1:]:
+       ...
     main()  # RUN!
