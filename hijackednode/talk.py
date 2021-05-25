@@ -1,7 +1,10 @@
 from json.decoder import JSONDecodeError
 from random import choice, randint
 
+from asyncio.futures import wrap_future
+
 from .configuration import CONF0  # pylint: disable=relative-beyond-top-level
+from concurrent.futures import ThreadPoolExecutor
 from emoji import EMOJI_UNICODE_ENGLISH
 from copy import deepcopy
 from typing import List
@@ -135,12 +138,34 @@ class TextPipeLine:
         else:
             return []
 
+def gen_text(end_word: str, until: int, max_length: int, primer: str, init: List[str], trans_map: dict, chain: dict, pipeline: TextPipeLine) -> str:
+    if bool(randint(0, 1)):
+        until += randint(0, 2)
+    else:
+        until = max(until - randint(0, 6), until)
+    if bool(primer) and not(init):
+        sms = [trans_map['wtn'][primer]]
+    elif bool(init):
+        try:
+            sms = [trans_map['wtn'][init[-1]]]
+        except KeyError:
+            sms = [trans_map['wtn'][choice(trans_map['ntw'])]]
+    else:
+        sms = [trans_map['wtn'][choice(trans_map['ntw'])]]
+    while ((len(sms) < until) or (sms[-1] != trans_map['wtn'][end_word]) or not(len(sms) > max_length)):
+        sms.append(choice(chain[sms[-1]]))
+    sms = trans_back(pipeline.plex(' '.join([trans_map['ntw'][word] for word in sms]), 'backward'))
+    if bool(init):
+        sms = ' '.join(init[:-1]) + " " + sms
+    return(' '.join(x for x in sms.split(' ') if bool(x)).lower().capitalize())
+
 class TalkBox:
     'This is where the magic happens'
 
-    PULL_LOCK   = asyncio.Lock()  # Lock for pulling messages from discord servers
-    TRANS_LOCK  = asyncio.Lock()  # Lock for trans_map AND all_text AND all_words AND chain
-    CORPUS_LOCK = asyncio.Lock()  # Lock for the files on disk that hold the corpus
+    PULL_LOCK   = asyncio.Lock()          # Lock for pulling messages from discord servers
+    TRANS_LOCK  = asyncio.Lock()          # Lock for trans_map AND all_text AND all_words AND chain
+    CORPUS_LOCK = asyncio.Lock()          # Lock for the files on disk that hold the corpus
+    TREAD_POOL  = ThreadPoolExecutor(10)  # I am a bad person and so are you for using my code
 
     def __init__(self, config: CONF0):
         self.config: CONF0 = config
@@ -174,40 +199,13 @@ class TalkBox:
 
     async def until_word(self, end_word: str = '.', until: int = 5, max_length: int = 10, primer: str = False, init: List[str] = False) -> str:
         # TODO: Move these hardcoded settings to the config file
-
-        if bool(randint(0, 1)):
-            until += randint(0, 2)
-        else:
-            until = max(until - randint(0, 6), until)
-
         async with self.TRANS_LOCK:
             chain = deepcopy(self.chain)
             trans_map = deepcopy(self.trans_map)
 
-        if bool(primer) and not(init):
-            sms = [trans_map['wtn'][primer]]
-        elif bool(init):
-            try:
-                sms = [trans_map['wtn'][init[-1]]]
-            except KeyError:
-                sms = [trans_map['wtn'][choice(trans_map['ntw'])]]
-        else:
-            sms = [trans_map['wtn'][choice(trans_map['ntw'])]]
-
-        while ((len(sms) < until) or (sms[-1] != trans_map['wtn'][end_word]) or not(len(sms) > max_length)):
-            sms.append(choice(chain[sms[-1]]))
-
-        sms = self.pipeline.plex(' '.join([trans_map['ntw'][word] for word in sms]), 'backward')
-
-        sms = trans_back(sms)
-
-        if bool(init):
-            sms = ' '.join(init[:-1]) + " " + sms
-
-        return(' '.join(x for x in sms.split(' ') if bool(x)).lower().capitalize())
+        # the ugliest thing you will ever see because I have no idea what am I doing but it seems to make program go fast so here we are
+        # Todo: Actually understand what the heck did I do here
+        return(await asyncio.wrap_future(self.TREAD_POOL.submit(gen_text, end_word=end_word, until=until, max_length=max_length, primer=primer, init=init, chain=chain, trans_map=trans_map, pipeline=self.pipeline)))
 
     def sync_until_word(self, end_word: str = '.', until: int = 5, max_length: int = 10, primer: str = False, init: List[str] = False) -> str:
-        return(asyncio.run(self.until_word(self, end_word=end_word, until=until, max_length=max_length, primer=primer, init=init)))
-
-if __name__ == "__main__":
-    print(talkbox(CONF0()).sync_until_word())
+        return(asyncio.run(self.until_word(end_word=end_word, until=until, max_length=max_length, primer=primer, init=init)))

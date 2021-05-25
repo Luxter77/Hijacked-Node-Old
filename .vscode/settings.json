@@ -20,6 +20,7 @@
         "apertium",
         "asynctqdm",
         "exif",
+        "getpid",
         "gevent",
         "infopog",
         "isdisjoint",

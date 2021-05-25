@@ -16,6 +16,7 @@ from typing import List
 from tqdm.asyncio import tqdm as asynctqdm
 
 from discord.ext import commands
+from shutil import rmtree
 import datetime as dt
 import traceback
 import glob
@@ -96,8 +97,7 @@ async def imgSearch(ctx: commands.Context, amount: int = 1, *query):
         await bing_image(query, amount, config)
         for x in glob.glob(os.path.join(config.PATH, "DB", "img", "ext", query, "Scrapper_*")):
             await ctx.send(file=discord.File(x))
-            os.remove(str(x))
-            os.rmdir(os.path.join(config.PATH, "DB", "img", "ext", query))
+            rmtree(os.path.join(config.PATH, "DB", "img", "ext", query), ignore_errors=True, onerror=None)
 
 @commands.cooldown(1, 10, commands.BucketType.guild)
 @bot.command(pass_context=True, name='last_file', description='Get last file from upload server.')
@@ -178,7 +178,7 @@ async def on_error(event_method, *args: list, **kwargs: dict):
 
 @bot.event
 async def on_ready():
-    print("[" + str(dt.datetime.now().timestamp()) + " ]")
+    print(f"I am: [{str(os.getpid())}][{str(dt.datetime.now().timestamp())}]")
     print(str(bot.user) + " Connected to:")
     for guild in bot.guilds:
         if guild.id in config.GildExList:
@@ -219,5 +219,5 @@ def main():
 
 if __name__ == '__main__':
     if sys.argv[1:]:
-       ...
+        ...
     main()  # RUN!
