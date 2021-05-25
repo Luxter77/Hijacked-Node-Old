@@ -11,7 +11,7 @@ from .talk import TalkBox
 
 from fake_useragent import UserAgent
 from random import choice, randint
-from typing import List
+from typing import List, Optional
 
 from tqdm.asyncio import tqdm as asynctqdm
 
@@ -91,13 +91,13 @@ async def pull_new_messages(ctx: commands.Context):
 
 @commands.cooldown(2, 15, commands.BucketType.user)
 @bot.command(pass_context=True, name='imgSearch', description='Search for images online and send the first match')
-async def imgSearch(ctx: commands.Context, amount: int = 1, *query):
+async def imgSearch(ctx: commands.Context, amount: typing.Optional[int] = 1, *query):
     async with ctx.message.channel.typing():
         query = ' '.join(query)
         await bing_image(query, amount, config)
         for x in glob.glob(os.path.join(config.PATH, "DB", "img", "ext", query, "Scrapper_*")):
             await ctx.send(file=discord.File(x))
-            rmtree(os.path.join(config.PATH, "DB", "img", "ext", query), ignore_errors=True, onerror=None)
+        rmtree(os.path.join(config.PATH, "DB", "img", "ext", query), ignore_errors=True, onerror=None)
 
 @commands.cooldown(1, 10, commands.BucketType.guild)
 @bot.command(pass_context=True, name='last_file', description='Get last file from upload server.')
