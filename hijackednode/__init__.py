@@ -90,8 +90,8 @@ async def pull_new_messages(ctx: commands.Context):
         await msg.edit(content='Synchronization done.')
 
 @commands.cooldown(2, 15, commands.BucketType.user)
-@bot.command(pass_context=True, name='imgSearch', description='Search for images online and send the first match')
-async def imgSearch(ctx: commands.Context, amount: typing.Optional[int] = 1, *query):
+@bot.command(pass_context=True, name='img', description='Search for images online and send the first match')
+async def img(ctx: commands.Context, amount: Optional[int] = 1, *query):
     async with ctx.message.channel.typing():
         query = ' '.join(query)
         await bing_image(query, amount, config)
