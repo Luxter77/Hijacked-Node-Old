@@ -304,12 +304,9 @@ class TalkBox:
         self.config: CONF0 = CONF0()
         self.pipeline = TextPipeLine(self.config)
         os.makedirs(os.path.join(self.config.PATH, "DB"), exist_ok=True)
-        asyncio.run(self.load())
+        self.load()
 
-    def talk(self):
-        return(asyncio.run(self.async_talk()))
-
-    async def load(self):
+    async def async_load(self):
         async with self.CORPUS_LOCK:
             all_text: list = (await self.pipeline.load_from_steph_logs()) + (await self.pipeline.load_from_discord_dump())
             all_words: list = list(set(all_text))
@@ -331,6 +328,7 @@ class TalkBox:
             self.all_text = all_text
             self.all_words = all_words
             self.trans_map = trans_map
+        return('')
 
     async def async_talk(self, end_word: str = '.', until: int = 5, max_length: int = 10, primer: str = False, init: List[str] = False) -> str:
         async with self.CORPUS_LOCK:
@@ -365,6 +363,13 @@ class TalkBox:
             sms = ' '.join(init[:-1]) + " " + sms
 
         return(' '.join(x for x in sms.split(' ') if bool(x)).lower().capitalize())
+
+    def load(self):
+        return(asyncio.run(self.async_load()))
+
+    def talk(self):
+        return(asyncio.run(self.async_talk()))
+
 
 
 talkbox = TalkBox()
