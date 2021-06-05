@@ -28,7 +28,7 @@ def _get_def_doc() -> str:
             return(subprocess.check_output(["xdg-user-dir", "DOCUMENTS"], universal_newlines=True).strip())
         except (FileNotFoundError, subprocess.CalledProcessError) as e:
             print(str(e), "\n\tI'm gonna try to guess the user and use the place I feel like using...\n")
-            return join('/home', os.environ['USER'], 'Docuements')
+            return join('/home', os.environ['LOGNAME'], 'Docuements')
 
 _WeapList = set([
     "Emojis", "Cringe", "A chainsaw", "Communism", "Capitalism", "Anarchism",
