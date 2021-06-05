@@ -4,6 +4,8 @@ from collections import UserDict
 import json
 import os
 
+from os.path import join
+
 from base64 import standard_b64decode as de64
 
 from discord import User, TextChannel, Guild
@@ -38,7 +40,7 @@ _WeapList = set([
     "javascript", "EvilCorp", "literally me", "the power of God and anime",
 ])
 
-_PATH = os.path.join(_get_def_doc(), "Hijacked-Node")
+_PATH = join(_get_def_doc(), "Hijacked-Node")
 
 _TreeDir = {
     'parrot': None,
@@ -63,13 +65,13 @@ class DayCheckType(NamedTuple):
     dint: int
 
 class DailyDictType(UserDict):
-    We: DayCheckType  # os.path.join(PATH, "db", "img", "We.png"),
-    Th: DayCheckType  # os.path.join(PATH, "db", "img", "Jh.gif"),
-    Fr: DayCheckType  # os.path.join(PATH, "db", "img", "Fr.jpg"),
-    Sa: DayCheckType  # os.path.join(PATH, "db", "img", "Sa.jpg"),
-    Su: DayCheckType  # os.path.join(PATH, "db", "img", "Su.jpg"),
-    Mo: DayCheckType  # os.path.join(PATH, "db", "img", "Mo.jpg"),
-    Tu: DayCheckType  # os.path.join(PATH, "db", "img", "Tu.jpg"),
+    We: DayCheckType  # join(PATH, "db", "img", "We.png"),
+    Th: DayCheckType  # join(PATH, "db", "img", "Jh.gif"),
+    Fr: DayCheckType  # join(PATH, "db", "img", "Fr.jpg"),
+    Sa: DayCheckType  # join(PATH, "db", "img", "Sa.jpg"),
+    Su: DayCheckType  # join(PATH, "db", "img", "Su.jpg"),
+    Mo: DayCheckType  # join(PATH, "db", "img", "Mo.jpg"),
+    Tu: DayCheckType  # join(PATH, "db", "img", "Tu.jpg"),
 
 class CONF0():
     'Unified Configuration Object'
@@ -136,20 +138,20 @@ class CONF0():
     def ch_dirs(self, tree: dict):
         for x in tree:
             if tree[x] is None:
-                os.makedirs(os.path.join(self.PATH, x), exist_ok=True)
+                os.makedirs(join(self.PATH, x), exist_ok=True)
             else:
                 self.ch_dirs(tree[x])
 
     def save(self):
         try:
-            with open(os.path.join(self.PATH, "config.json")) as confile:
+            with open(join(self.PATH, "config.json")) as confile:
                 json.dump(confile, confile, indent=4, sort_keys=True)
         except Exception:
             Pain(BaseException)  # Hug you Loop
 
     def load(self):
         try:
-            data = json.load(open(os.path.join(self.PATH, "config.json"), "rb"))
+            data = json.load(open(join(self.PATH, "config.json"), "rb"))
             self.TOKEN = data.get('TOKEN')
             self.DevLab = data.get('DevLab')
             self.LogChan = data.get('LogChan')
