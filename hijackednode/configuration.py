@@ -22,9 +22,11 @@ def _get_def_doc() -> str:
         ctypes.windll.shell32.SHGetFolderPathW(None, 5, None, 0, buf)
         return(str(buf.value))
     else:
-        return(subprocess.check_output(
-            ["xdg-user-dir", "DOCUMENTS"], universal_newlines=True
-        ).strip())
+        try:
+            return(subprocess.check_output(["xdg-user-dir", "DOCUMENTS"], universal_newlines=True).strip())
+        except (FileNotFoundError, subprocess.CalledProcessError) as e:
+            print(str(e), "\n\tI'm gonna try to guess the user and use the place I feel like using...\n")
+            return join('/home', os.environ['USER'], 'Docuements')
 
 _WeapList = set([
     "Emojis", "Cringe", "A chainsaw", "Communism", "Capitalism", "Anarchism",
