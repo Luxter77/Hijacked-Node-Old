@@ -144,7 +144,10 @@ def gen_text(end_word: str, until: int, max_length: int, primer: str, init: List
     else:
         until = max(until - randint(0, 6), until)
     if bool(primer) and not(init):
-        sms = [trans_map['wtn'][primer]]
+        try:
+            sms = [trans_map['wtn'][primer]]
+        except KeyError:
+            return(f'No conozco la palabra: "{primer}"')
     elif bool(init):
         try:
             sms = [trans_map['wtn'][init[-1]]]
