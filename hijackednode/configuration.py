@@ -43,13 +43,15 @@ _WeapList = set([
 _PATH = join(_get_def_doc(), "Hijacked-Node")
 
 _TreeDir = {
-    'parrot': None,
-    'img': {
-        'birthday': None,
-        'daily': None
-    },
-    'txt': None,
-    'wsp': None,
+    "DB": {
+        'parrot': None,
+        'img': {
+            'birthday': None,
+            'daily': None
+        },
+        'txt': None,
+        'wsp': None,
+    }
 }
 
 EmoteNestType = List[List[str]]
