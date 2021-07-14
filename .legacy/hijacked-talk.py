@@ -281,14 +281,17 @@ class TextPipeLine:
 
         text = self.plex(unicodedata.normalize("NFC", text)).lower().split()  # FPCAMHHPC
 
-        if (text[-1] == '.'):
-            if (text[-2] == '.'):
-                if (text[-3] == '.'):
-                    text = text[:-2]
-                else:
-                    text = text[:-1]
-        else:
-            text = text + ['.']
+        try:
+            if (text[-1] == '.'):
+                if (text[-2] == '.'):
+                    if (text[-3] == '.'):
+                        text = text[:-2]
+                    else:
+                        text = text[:-1]
+            else:
+                text = text + ['.']
+        except IndexError:
+            pass # I pretend I do not see it
 
         if bool(text):
             return text
