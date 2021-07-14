@@ -134,7 +134,7 @@ class TextPipeLine:
             else:
                 text = text + ['.']
         except IndexError:
-            pass # I pretend I do not see it
+            return [] # I pretend I do not see it
 
         if bool(text):
             return text
