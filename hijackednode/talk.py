@@ -68,7 +68,7 @@ class TextPipeLine:
             return text
 
     def checks(self, skala: str) -> bool:
-        if ((len(skala) < 6) or (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
+        if ((len(skala) < 5) or (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
             return False
         else:
             for banned in self.config.PrefBanLst:
@@ -124,14 +124,17 @@ class TextPipeLine:
 
         text = self.plex(unicodedata.normalize("NFC", text)).lower().split()  # FPCAMHHPC
 
-        if (text[-1] == '.'):
-            if (text[-2] == '.'):
-                if (text[-3] == '.'):
-                    text = text[:-2]
-                else:
-                    text = text[:-1]
-        else:
-            text = text + ['.']
+        try:
+            if (text[-1] == '.'):
+                if (text[-2] == '.'):
+                    if (text[-3] == '.'):
+                        text = text[:-2]
+                    else:
+                        text = text[:-1]
+            else:
+                text = text + ['.']
+        except IndexError:
+            pass # I pretend I do not see it
 
         if bool(text):
             return text
