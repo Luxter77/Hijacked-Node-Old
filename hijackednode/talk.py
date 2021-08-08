@@ -161,7 +161,7 @@ def gen_text(end_word: str, until: int, max_length: int, primer: str, init: List
 
     sms = pipeline.plex(' '.join([trans_map['ntw'][word] for word in sms]), 'backward')
 
-    if pipeline.config.TRANSBACK:
+    if pipeline.config.TransBack:
         sms = trans_back(sms)
 
     if bool(init):
