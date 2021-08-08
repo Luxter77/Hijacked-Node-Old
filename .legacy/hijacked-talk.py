@@ -85,13 +85,15 @@ _WeapList = set([
 
 
 _TreeDir = {
-    'parrot': None,
-    'img': {
-        'birthday': None,
-        'daily': None
-    },
-    'txt': None,
-    'wsp': None,
+    "DB": {
+        'parrot': None,
+        'img': {
+            'birthday': None,
+            'daily': None
+        },
+        'txt': None,
+        'wsp': None,
+    }
 }
 
 EmoteNestType = List[List[str]]
@@ -107,13 +109,13 @@ class DayCheckType(NamedTuple):
     dint: int
 
 class DailyDictType(UserDict):
-    We: DayCheckType  # os.path.join(PATH, "db", "img", "We.png"),
-    Th: DayCheckType  # os.path.join(PATH, "db", "img", "Jh.gif"),
-    Fr: DayCheckType  # os.path.join(PATH, "db", "img", "Fr.jpg"),
-    Sa: DayCheckType  # os.path.join(PATH, "db", "img", "Sa.jpg"),
-    Su: DayCheckType  # os.path.join(PATH, "db", "img", "Su.jpg"),
-    Mo: DayCheckType  # os.path.join(PATH, "db", "img", "Mo.jpg"),
-    Tu: DayCheckType  # os.path.join(PATH, "db", "img", "Tu.jpg"),
+    We: DayCheckType  # os.path.join(PATH, "DB", "img", "We.png"),
+    Th: DayCheckType  # os.path.join(PATH, "DB", "img", "Jh.gif"),
+    Fr: DayCheckType  # os.path.join(PATH, "DB", "img", "Fr.jpg"),
+    Sa: DayCheckType  # os.path.join(PATH, "DB", "img", "Sa.jpg"),
+    Su: DayCheckType  # os.path.join(PATH, "DB", "img", "Su.jpg"),
+    Mo: DayCheckType  # os.path.join(PATH, "DB", "img", "Mo.jpg"),
+    Tu: DayCheckType  # os.path.join(PATH, "DB", "img", "Tu.jpg"),
 
 class CONF0():
     'Unified Configuration Object'
@@ -237,12 +239,12 @@ class TextPipeLine:
         "It's a bad multilingual pun"
         # WARNING: you should set up a lock outside from this function
         try:
-            with open(os.path.join(self.config.PATH, "DB", "parrot.json"), 'r') as corp_file:
+            with open(os.path.join(self.config.PATH, "DB", "parrot", "parrot.json"), 'r') as corp_file:
                 chat_log   = json.load(corp_file)
                 proto_corp = list()
         except JSONDecodeError:
             try:
-                with open(os.path.join(self.config.PATH, "DB", "parrot.bkp.json"), 'r') as corp_file:
+                with open(os.path.join(self.config.PATH, "DB", "parrot", "parrot.bkp.json"), 'r') as corp_file:
                     chat_log   = json.load(corp_file)
                     proto_corp = list()
             except FileNotFoundError:

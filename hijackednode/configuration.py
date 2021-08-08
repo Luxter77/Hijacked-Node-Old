@@ -67,13 +67,13 @@ class DayCheckType(NamedTuple):
     dint: int
 
 class DailyDictType(UserDict):
-    We: DayCheckType  # join(PATH, "db", "img", "We.png"),
-    Th: DayCheckType  # join(PATH, "db", "img", "Jh.gif"),
-    Fr: DayCheckType  # join(PATH, "db", "img", "Fr.jpg"),
-    Sa: DayCheckType  # join(PATH, "db", "img", "Sa.jpg"),
-    Su: DayCheckType  # join(PATH, "db", "img", "Su.jpg"),
-    Mo: DayCheckType  # join(PATH, "db", "img", "Mo.jpg"),
-    Tu: DayCheckType  # join(PATH, "db", "img", "Tu.jpg"),
+    We: DayCheckType  # join(PATH, "DB", "img", "We.png"),
+    Th: DayCheckType  # join(PATH, "DB", "img", "Jh.gif"),
+    Fr: DayCheckType  # join(PATH, "DB", "img", "Fr.jpg"),
+    Sa: DayCheckType  # join(PATH, "DB", "img", "Sa.jpg"),
+    Su: DayCheckType  # join(PATH, "DB", "img", "Su.jpg"),
+    Mo: DayCheckType  # join(PATH, "DB", "img", "Mo.jpg"),
+    Tu: DayCheckType  # join(PATH, "DB", "img", "Tu.jpg"),
 
 class CONF0():
     'Unified Configuration Object'

@@ -1,8 +1,6 @@
 from json.decoder import JSONDecodeError
 from random import choice, randint
 
-from asyncio.futures import wrap_future
-
 from .configuration import CONF0  # pylint: disable=relative-beyond-top-level
 from concurrent.futures import ThreadPoolExecutor
 from emoji import EMOJI_UNICODE_ENGLISH
@@ -80,12 +78,12 @@ class TextPipeLine:
         "It's a bad multilingual pun"
         # WARNING: you should set up a lock outside from this function
         try:
-            with open(os.path.join(self.config.PATH, "DB", "parrot.json"), 'r') as corp_file:
+            with open(os.path.join(self.config.PATH, "DB", "parrot", "parrot.json"), 'r') as corp_file:
                 chat_log   = json.load(corp_file)
                 proto_corp = list()
         except JSONDecodeError:
             try:
-                with open(os.path.join(self.config.PATH, "DB", "parrot.bkp.json"), 'r') as corp_file:
+                with open(os.path.join(self.config.PATH, "DB", "parrot", "parrot.bkp.json"), 'r') as corp_file:
                     chat_log   = json.load(corp_file)
                     proto_corp = list()
             except FileNotFoundError:
