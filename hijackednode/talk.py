@@ -66,7 +66,7 @@ class TextPipeLine:
             return text
 
     def checks(self, skala: str) -> bool:
-        if ((len(skala) < 5) or (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
+        if ((len(skala) < 5) or (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or (bool(re.search('[\u0400-\u04FF]', skala)) and self.config.RejectCyrillic) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
             return False
         else:
             for banned in self.config.PrefBanLst:
@@ -158,7 +158,12 @@ def gen_text(end_word: str, until: int, max_length: int, primer: str, init: List
         sms = [trans_map['wtn'][choice(trans_map['ntw'])]]
     while ((len(sms) < until) or (sms[-1] != trans_map['wtn'][end_word]) or not(len(sms) > max_length)):
         sms.append(choice(chain[sms[-1]]))
-    sms = trans_back(pipeline.plex(' '.join([trans_map['ntw'][word] for word in sms]), 'backward'))
+
+    sms = pipeline.plex(' '.join([trans_map['ntw'][word] for word in sms]), 'backward')
+
+    if pipeline.config.TRANSBACK:
+        sms = trans_back(sms)
+
     if bool(init):
         sms = ' '.join(init[:-1]) + " " + sms
     return(' '.join(x for x in sms.split(' ') if bool(x)).lower().capitalize())

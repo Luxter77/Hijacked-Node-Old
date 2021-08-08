@@ -96,6 +96,8 @@ class CONF0():
                  GildExList: DiscordGuildType = set(),
                  WordExList: WordsType = set(),
                  WordBanLst: WordsType = set(),
+                 TransBack: bool = True,
+                 RejectCyrillic: bool = False,
                  SpecDate: List[dict] = [],
                  DailyDict: DailyDictType = set(),
                  DailyChan: DiscordChannelType = set(),
@@ -119,6 +121,8 @@ class CONF0():
         self.GildExList = GildExList
         self.WordExList = WordExList
         self.WordBanLst = WordBanLst
+        self.TransBack = TransBack
+        self.RejectCyrillic = RejectCyrillic
         self.SpecDate = SpecDate
         self.DailyDict = DailyDict
         self.DailyChan = DailyChan
@@ -172,6 +176,8 @@ class CONF0():
             self.GildExList = data.get('GildExList')
             self.WordExList = data.get('WordExList')
             self.WordBanLst = data.get('WordBanLst')
+            self.TransBack = data.get('TransBack')
+            self.RejectCyrillic = data.get('RejectCyrillic')
             self.SpecDate = data.get('SpecDate')
             self.DailyDict = data.get('DailyDict')
             self.DailyChan = data.get('DailyChan')
