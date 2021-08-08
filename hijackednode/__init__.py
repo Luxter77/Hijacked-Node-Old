@@ -102,7 +102,7 @@ async def pull_new_messages(ctx: commands.Context):
                 continue
             try:
                 async for message in asynctqdm(channel.history(limit=None, oldest_first=True, after=last_time, before=now), leave=False):
-                    if message.type == discord.MessageType.default and not(message.author.id in config.UserExLixt) and not(message.author.bot):
+                    if (message.type == discord.MessageType.default) and bool(message.content) and not(message.author.id in config.UserExLixt) and not(message.author.bot):
                         try:
                             messages_all[str(guild.id)][str(channel.id)].append(message.content)
                         except Exception:
