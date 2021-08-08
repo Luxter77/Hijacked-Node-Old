@@ -57,7 +57,7 @@ async def dump_chain(ctx: commands.Context, chain: bool = True, dictionary: bool
 
             json.dump(data, da_file, indent=4, sort_keys=True)
 
-            await ctx.send("All data file:", file=discord.File(da_file, f"all_data.{str(dt.datetime.now().timestamp())}.txt"))
+            await ctx.send("All data file:", file=discord.File(da_file, f"all_data.{str(dt.datetime.now().timestamp())}.json"))
 
             da_file.close()
 
@@ -65,25 +65,25 @@ async def dump_chain(ctx: commands.Context, chain: bool = True, dictionary: bool
             if chain:
                 chain_file = io.StringIO()
                 json.dump(chain_, chain_file, indent=4, sort_keys=True)
-                await ctx.send("Chain file:", file=discord.File(chain_file, f"chain.{str(dt.datetime.now().timestamp())}.txt"))
+                await ctx.send("Chain file:", file=discord.File(chain_file, f"chain.{str(dt.datetime.now().timestamp())}.json"))
                 chain_file.close()
 
             if dictionary:
                 dict_file = io.StringIO()
                 json.dump(trans_map_, chain_file, indent=4, sort_keys=True)
-                await ctx.send("Dictionary file:", file=discord.File(chain_file, f"dictionary.{str(dt.datetime.now().timestamp())}.txt"))
+                await ctx.send("Dictionary file:", file=discord.File(chain_file, f"dictionary.{str(dt.datetime.now().timestamp())}.json"))
                 dict_file.close()
 
             if all_words:
                 all_words_file = io.StringIO()
                 json.dump(all_words_, all_words_file, indent=4, sort_keys=True)
-                await ctx.send("Dictionary file:", file=discord.File(all_words_file, f"words.{str(dt.datetime.now().timestamp())}.txt"))
+                await ctx.send("Dictionary file:", file=discord.File(all_words_file, f"words.{str(dt.datetime.now().timestamp())}.json"))
                 all_words_file.close()
 
             if all_text:
                 all_text_file = io.StringIO()
                 json.dump(all_text_, all_text_file, indent=4, sort_keys=True)
-                await ctx.send("Dictionary file:", file=discord.File(all_text_file, f"text.{str(dt.datetime.now().timestamp())}.txt"))
+                await ctx.send("Dictionary file:", file=discord.File(all_text_file, f"text.{str(dt.datetime.now().timestamp())}.json"))
                 all_text_file.close()
     else:
         ctx.send('Not in here, not by you')
