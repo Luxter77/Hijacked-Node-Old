@@ -89,7 +89,7 @@ async def dump_chain(ctx: discord.Context, chain: bool = True, dictionary: bool 
 @bot.command(pass_context=True, name='pull_new_messages', description='Pulls all new messages from discord servers not already on database')
 async def pull_new_messages(ctx: commands.Context):
     if (talkbox.CORPUS_LOCK.locked()):
-        await ctx.send("I'm occupied right about now.")
+        await ctx.send("I'm occupied doing something else right about now...")
         return()
 
     msg: discord.Message = await ctx.send('On it.')
@@ -117,7 +117,7 @@ async def pull_new_messages(ctx: commands.Context):
                 continue
             try:
                 async for message in asynctqdm(channel.history(limit=None, oldest_first=True, after=last_time, before=now), leave=False):
-                    if message.type == discord.MessageType.default and not (message.author.id in config.UserExLixt):
+                    if message.type == discord.MessageType.default and not(message.author.id in config.UserExLixt) and not(message.author.bot):
                         try:
                             messages_all[str(guild.id)][str(channel.id)].append(message.content)
                         except Exception:
@@ -166,17 +166,17 @@ async def ping(ctx: commands.Context, times: int = 1):
 
         await t_msg.edit(content=("Pong! Took: " + str(round(number=(sum(t_ms) / (len(t_ms) * 1000)), ndigits=3)) + "ms."))
 
-@bot.command(pass_context=True, name='punch', description='Hurts <someone> using <something>')
-async def punch(ctx: commands.Context, someone: discord.Member, *using):
+@bot.command(pass_context=True, name='punch', description='Hurts [someone] using [something]')
+async def punch(ctx: commands.Context, someone: discord.Member, *something):
     async with ctx.typing():
         if (bot.user == someone):
-            await ctx.send(f"I obliterate {ctx.author.mention} using: " + ((' '.join(using)) if bool(using) else (choice(config.WeapList) + '.')))
+            await ctx.send(f"I obliterate {ctx.author.mention} using: " + ((' '.join(something)) if bool(something) else (choice(config.WeapList) + '.')))
         else:
             if bool(someone):
                 if ((ctx.author.id in config.SUPERUSER) or (ctx.guild.id in config.DevLab)):
-                    await ctx.send(f"I obliterate {someone.mention} using: " + ((' '.join(using)) if bool(using) else (choice(config.WeapList) + '.')))
+                    await ctx.send(f"I obliterate {someone.mention} using: " + ((' '.join(something)) if bool(something) else (choice(config.WeapList) + '.')))
                 else:
-                    await ctx.send(f"I punch {someone.mention}" + ((' using: ' + ' '.join(using)) if bool(using) else ('.')))
+                    await ctx.send(f"I punch {someone.mention}" + ((' using: ' + ' '.join(something)) if bool(something) else ('.')))
 
 @bot.command(pass_context=True, name='say', description='>Title')
 async def say(ctx: commands.Context, *words):
