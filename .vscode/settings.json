@@ -6,7 +6,7 @@
 	"python.linting.enabled": true,
 	"python.linting.flake8Args": [
 		"--max-line-length=120",
-		"--ignore=E221,E222,E402,E241,F841,F401,E302,E305,E306,W501,E501,E223,E224,W504,E701,E251,E261,E303",
+		"--ignore=E221,E222,E402,E241,F841,F401,E302,E305,E306,W501,E501,E223,E224,W504,E701,E251,E261,E303,E272",
 	],
 	"python.formatting.provider": "black",
 	"editor.detectIndentation": false,
