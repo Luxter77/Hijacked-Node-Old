@@ -99,6 +99,7 @@ class CONF0():
                  TransBack: bool = True,
                  RejectCyrillic: bool = False,
                  SkalaRatio: Union[float, int] = 2,
+                 SkalaMinStrLen: int = 5,
                  SpecDate: List[dict] = [],
                  DailyDict: DailyDictType = set(),
                  DailyChan: DiscordChannelType = set(),
@@ -124,6 +125,7 @@ class CONF0():
         self.WordBanLst = WordBanLst
         self.TransBack = TransBack
         self.SkalaRatio = SkalaRatio
+        self.SkalaMinStrLen = SkalaMinStrLen
         self.RejectCyrillic = RejectCyrillic
         self.SpecDate = SpecDate
         self.DailyDict = DailyDict
@@ -181,6 +183,7 @@ class CONF0():
             self.TransBack = data.get('TransBack')
             self.RejectCyrillic = data.get('RejectCyrillic')
             self.SkalaRatio = data.get('SkalaRatio')
+            self.SkalaMinStrLen = data.get('SkalaMinStrLen')
             self.SpecDate = data.get('SpecDate')
             self.DailyDict = data.get('DailyDict')
             self.DailyChan = data.get('DailyChan')
