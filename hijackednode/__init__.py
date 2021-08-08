@@ -57,16 +57,16 @@ async def dump_chain(ctx: commands.Context, chain: bool = True, dictionary: bool
                 if all_words:  data['all_words'] = all_words_
                 if all_text:   data['all_text']  = all_text_
 
-                await ctx.send("All data file:", file=discord.File(io.BytesIO(json.dumps(data, indent=4, sort_keys=True, ensure_ascii=False).encode()), f"all_data.{str(dt.datetime.now().timestamp())}.json"))
+                await ctx.send(content="All data file:", file=discord.File(io.BytesIO(json.dumps(data, indent=4, sort_keys=True, ensure_ascii=False).encode()), f"all_data.{str(dt.datetime.now().timestamp())}.json"))
 
             else:
-                if chain:      await ctx.send("Chain file:",      discord.File(io.BytesIO(json.dumps(chain_,     indent=4, sort_keys=True, ensure_ascii=False).encode()), f"chain.{     str(dt.datetime.now().timestamp())}.json"))
-                if dictionary: await ctx.send("Dictionary file:", discord.File(io.BytesIO(json.dumps(trans_map_, indent=4, sort_keys=True, ensure_ascii=False).encode()), f"dictionary.{str(dt.datetime.now().timestamp())}.json"))
-                if all_words:  await ctx.send("All Words file:",  discord.File(io.BytesIO(json.dumps(all_words_, indent=4, sort_keys=True, ensure_ascii=False).encode()), f"words.{     str(dt.datetime.now().timestamp())}.json"))
-                if all_text:   await ctx.send("All Text file:",   discord.File(io.BytesIO(json.dumps(all_text_,  indent=4, sort_keys=True, ensure_ascii=False).encode()), f"text.{      str(dt.datetime.now().timestamp())}.json"))
+                if chain:      await ctx.send(content="Chain file:",      file=discord.File(io.BytesIO(json.dumps(chain_,     indent=4, sort_keys=True, ensure_ascii=False).encode()), filename=f"chain.{     str(dt.datetime.now().timestamp())}.json"))
+                if dictionary: await ctx.send(content="Dictionary file:", file=discord.File(io.BytesIO(json.dumps(trans_map_, indent=4, sort_keys=True, ensure_ascii=False).encode()), filename=f"dictionary.{str(dt.datetime.now().timestamp())}.json"))
+                if all_words:  await ctx.send(content="All Words file:",  file=discord.File(io.BytesIO(json.dumps(all_words_, indent=4, sort_keys=True, ensure_ascii=False).encode()), filename=f"words.{     str(dt.datetime.now().timestamp())}.json"))
+                if all_text:   await ctx.send(content="All Text file:",   file=discord.File(io.BytesIO(json.dumps(all_text_,  indent=4, sort_keys=True, ensure_ascii=False).encode()), filename=f"text.{      str(dt.datetime.now().timestamp())}.json"))
 
         else:
-            await ctx.send('Not in here, not by you')
+            await ctx.send(content='Not in here, not by you')
         await bot.change_presence(activity=discord.Game(name="Complex Numbers"))
 
 # BOT COMMANDS
