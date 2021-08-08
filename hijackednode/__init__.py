@@ -70,8 +70,8 @@ async def dump_chain(ctx: commands.Context, chain: bool = True, dictionary: bool
 
             if dictionary:
                 dict_file = io.StringIO()
-                json.dump(trans_map_, chain_file, indent=4, sort_keys=True)
-                await ctx.send("Dictionary file:", file=discord.File(chain_file, f"dictionary.{str(dt.datetime.now().timestamp())}.json"))
+                json.dump(trans_map_, dict_file, indent=4, sort_keys=True)
+                await ctx.send("Dictionary file:", file=discord.File(dict_file, f"dictionary.{str(dt.datetime.now().timestamp())}.json"))
                 dict_file.close()
 
             if all_words:
