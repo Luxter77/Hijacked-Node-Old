@@ -135,14 +135,22 @@ class CONF0():
             self.load()
         except Exception:
             pass  # oh well, I did my best :shrug:
-        self.ch_dirs(_TreeDir)
 
-    def ch_dirs(self, tree: dict):
+        self.ch_dirs()
+
+    def ch_dirs(self):
+        os.chdir(self.PATH)
+        self._ch_dirs(_TreeDir)
+        os.chdir(self.PATH)
+
+    def _ch_dirs(self, tree: dict):
         for x in tree:
             if tree[x] is None:
-                os.makedirs(join(self.PATH, x), exist_ok=True)
+                os.makedirs(join(x), exist_ok=True)
             else:
+                os.chdir(x)
                 self.ch_dirs(tree[x])
+                os.chdir('..')
 
     def save(self):
         try:
