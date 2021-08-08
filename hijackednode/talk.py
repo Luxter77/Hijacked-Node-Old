@@ -66,7 +66,7 @@ class TextPipeLine:
             return text
 
     def checks(self, skala: str) -> bool:
-        if ((len(skala) < 5) or (len(skala.replace(" ", "")) / len(skala.split(" ")) <= 2) or (bool(re.search('[\u0400-\u04FF]', skala)) and self.config.RejectCyrillic) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
+        if ((len(skala) < 5) or ((len(skala.replace(" ", "")) / len(skala.split(" "))) <= self.config.SkalaRatio) or (bool(re.search('[\u0400-\u04FF]', skala)) and self.config.RejectCyrillic) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
             return False
         else:
             for banned in self.config.PrefBanLst:
