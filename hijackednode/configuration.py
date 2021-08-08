@@ -140,7 +140,7 @@ class CONF0():
 
     def ch_dirs(self):
         os.chdir(self.PATH)
-        self._ch_dirs(_TreeDir)
+        self._ch_dirs(tree=_TreeDir)
         os.chdir(self.PATH)
 
     def _ch_dirs(self, tree: dict):
@@ -149,7 +149,7 @@ class CONF0():
                 os.makedirs(join(x), exist_ok=True)
             else:
                 os.chdir(x)
-                self.ch_dirs(tree[x])
+                self._ch_dirs(tree=tree[x])
                 os.chdir('..')
 
     def save(self):
