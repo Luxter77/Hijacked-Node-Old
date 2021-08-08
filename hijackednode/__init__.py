@@ -41,6 +41,7 @@ talkbox = TalkBox(config)
 @bot.command(pass_context=True, name='dump_chain', description="DEBUG-ONLY: dumps markov chain and dictionary to a file!", hidden=True)
 async def dump_chain(ctx: commands.Context, chain: bool = True, dictionary: bool = True, all_words: bool = False, all_text: bool = False, single_file: bool = False):
     async with ctx.typing():
+        await bot.change_presence(activity=discord.Game(name="Core Dumping..."))
         if (ctx.channel.id in config.DevLab) or (ctx.author.id in config.SUPERUSER):
             async with talkbox.TRANS_LOCK:
                 chain_     = deepcopy(talkbox.chain)
@@ -66,6 +67,7 @@ async def dump_chain(ctx: commands.Context, chain: bool = True, dictionary: bool
 
         else:
             await ctx.send('Not in here, not by you')
+        await bot.change_presence(activity=discord.Game(name="Complex Numbers"))
 
 # BOT COMMANDS
 @commands.cooldown(1, 120, commands.BucketType.default)
