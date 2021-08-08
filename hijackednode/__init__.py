@@ -179,8 +179,8 @@ async def talk(ctx: commands.Context, *base):
 async def on_command_error(context: commands.Context, exception: Exception, *args: list, **kwargs: dict):
     print()
     print(f"Ignoring exception in command {context.command}:")
-    traceback.print_exception(type(exception), exception, exception.__traceback__)
-
+    traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stdout)
+    print()
     print(f"[message]: {context.message.content}")
 
     if bool(args):
@@ -192,8 +192,8 @@ async def on_command_error(context: commands.Context, exception: Exception, *arg
 @bot.event
 async def on_error(event_method, *args: list, **kwargs: dict):
     print()
-    print(f" Ignoring exception in {event_method}")
-    traceback.print_exc()
+    print(" Ignoring exception in", event_method)
+    traceback.print_exc(file=sys.stdout)
     if args:
         print(f"[args]: {args.__repr__()}")
     if kwargs:
