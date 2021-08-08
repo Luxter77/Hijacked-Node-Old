@@ -85,7 +85,7 @@ async def dump_chain(ctx: discord.Context, chain: bool = True, dictionary: bool 
 
 
 # BOT COMMANDS
-@commands.cooldown(1, 120, commands.BucketType.user)
+@commands.cooldown(1, 120, commands.BucketType.default)
 @bot.command(pass_context=True, name='pull_new_messages', description='Pulls all new messages from discord servers not already on database')
 async def pull_new_messages(ctx: commands.Context):
     if (talkbox.CORPUS_LOCK.locked()):
