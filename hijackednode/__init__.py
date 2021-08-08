@@ -38,7 +38,7 @@ talkbox = TalkBox(config)
 
 # DEV-LAB ONLY COMMANDS
 # these are for debugging and such
-@bot.command(pass_context=True, name='dump_chain', description="DEBUG-ONLY: dumps markov chain and dictionary to a file!")
+@bot.command(pass_context=True, name='dump_chain', description="DEBUG-ONLY: dumps markov chain and dictionary to a file!", hidden=True)
 async def dump_chain(ctx: commands.Context, chain: bool = True, dictionary: bool = True, all_words: bool = False, all_text: bool = False, single_file: bool = False):
     if (ctx.channel.id in config.DevLab) or (ctx.author.id in config.SUPERUSER):
         async with talkbox.TRANS_LOCK:
