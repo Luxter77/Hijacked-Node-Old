@@ -40,31 +40,32 @@ talkbox = TalkBox(config)
 # these are for debugging and such
 @bot.command(pass_context=True, name='dump_chain', description="DEBUG-ONLY: dumps markov chain and dictionary to a file!", hidden=True)
 async def dump_chain(ctx: commands.Context, chain: bool = True, dictionary: bool = True, all_words: bool = False, all_text: bool = False, single_file: bool = False):
-    if (ctx.channel.id in config.DevLab) or (ctx.author.id in config.SUPERUSER):
-        async with talkbox.TRANS_LOCK:
-            chain_     = deepcopy(talkbox.chain)
-            trans_map_ = deepcopy(talkbox.trans_map)
-            all_words_ = deepcopy(talkbox.all_words)
-            all_text_  = deepcopy(talkbox.all_text)
+    async with ctx.typing():
+        if (ctx.channel.id in config.DevLab) or (ctx.author.id in config.SUPERUSER):
+            async with talkbox.TRANS_LOCK:
+                chain_     = deepcopy(talkbox.chain)
+                trans_map_ = deepcopy(talkbox.trans_map)
+                all_words_ = deepcopy(talkbox.all_words)
+                all_text_  = deepcopy(talkbox.all_text)
 
-        if single_file:
-            data = dict()
-            
-            if chain:      data['chain']     = chain_
-            if dictionary: data['trans_map'] = trans_map_
-            if all_words:  data['all_words'] = all_words_
-            if all_text:   data['all_text']  = all_text_
+            if single_file:
+                data = dict()
 
-            await ctx.send("All data file:", file=discord.File(io.BytesIO(json.dumps(data, indent=4, sort_keys=True, ensure_ascii=False).encode()), f"all_data.{str(dt.datetime.now().timestamp())}.json"))
+                if chain:      data['chain']     = chain_
+                if dictionary: data['trans_map'] = trans_map_
+                if all_words:  data['all_words'] = all_words_
+                if all_text:   data['all_text']  = all_text_
+
+                await ctx.send("All data file:", file=discord.File(io.BytesIO(json.dumps(data, indent=4, sort_keys=True, ensure_ascii=False).encode()), f"all_data.{str(dt.datetime.now().timestamp())}.json"))
+
+            else:
+                if chain:      await ctx.send("Chain file:",      discord.File(io.BytesIO(json.dumps(chain_,     indent=4, sort_keys=True, ensure_ascii=False).encode()), f"chain.{     str(dt.datetime.now().timestamp())}.json"))
+                if dictionary: await ctx.send("Dictionary file:", discord.File(io.BytesIO(json.dumps(trans_map_, indent=4, sort_keys=True, ensure_ascii=False).encode()), f"dictionary.{str(dt.datetime.now().timestamp())}.json"))
+                if all_words:  await ctx.send("All Words file:",  discord.File(io.BytesIO(json.dumps(all_words_, indent=4, sort_keys=True, ensure_ascii=False).encode()), f"words.{     str(dt.datetime.now().timestamp())}.json"))
+                if all_text:   await ctx.send("All Text file:",   discord.File(io.BytesIO(json.dumps(all_text_,  indent=4, sort_keys=True, ensure_ascii=False).encode()), f"text.{      str(dt.datetime.now().timestamp())}.json"))
 
         else:
-            if chain:      await ctx.send("Chain file:",      discord.File(io.BytesIO(json.dumps(chain_,     indent=4, sort_keys=True, ensure_ascii=False).encode()), f"chain.{     str(dt.datetime.now().timestamp())}.json"))
-            if dictionary: await ctx.send("Dictionary file:", discord.File(io.BytesIO(json.dumps(trans_map_, indent=4, sort_keys=True, ensure_ascii=False).encode()), f"dictionary.{str(dt.datetime.now().timestamp())}.json"))
-            if all_words:  await ctx.send("All Words file:",  discord.File(io.BytesIO(json.dumps(all_words_, indent=4, sort_keys=True, ensure_ascii=False).encode()), f"words.{     str(dt.datetime.now().timestamp())}.json"))
-            if all_text:   await ctx.send("All Text file:",   discord.File(io.BytesIO(json.dumps(all_text_,  indent=4, sort_keys=True, ensure_ascii=False).encode()), f"text.{      str(dt.datetime.now().timestamp())}.json"))
-
-    else:
-        ctx.send('Not in here, not by you')
+            await ctx.send('Not in here, not by you')
 
 # BOT COMMANDS
 @commands.cooldown(1, 120, commands.BucketType.default)
