@@ -17,11 +17,13 @@ from tqdm.asyncio import tqdm as asynctqdm
 
 from discord.ext import commands
 from shutil import rmtree
+from copy import deepcopy
 import datetime as dt
 import traceback
 import glob
 import json
 import sys
+import io
 import os
 import re
 
@@ -34,60 +36,109 @@ bot = Bot(command_prefix=config.CommandPrefix, case_insensitive=True)
 talkbox = TalkBox(config)
 
 
+# DEV-LAB ONLY COMMANDS
+# these are for debugging and such
+@bot.commadn(pass_context=True, name='dump_chain', description="DEBUG-ONLY: dumps markov chain and dictionary to a file!")
+async def dump_chain(ctx: discord.Context, chain: bool = True, dictionary: bool = True, all_words: bool = False, all_text: bool = False, single_file: bool = False):
+    async with talkbox.TRANS_LOCK:
+        chain_     = deepcopy(talkbox.chain)
+        trans_map_ = deepcopy(talkbox.trans_map)
+        all_words_ = deepcopy(talkbox.all_words)
+        all_text_  = deepcopy(talkbox.all_text)
+
+    if single_file:
+        da_file, data = io.StringIO(), dict()
+
+        if chain:      data['chain']     = chain_
+        if dictionary: data['trans_map'] = trans_map_
+        if all_words:  data['all_words'] = all_words_
+        if all_text:   data['all_text']  = all_text_
+
+        json.dump(data, da_file, indent=4, sort_keys=True)
+
+        da_file.close()
+
+    else:
+        if chain:
+            chain_file = io.StringIO()
+            json.dump(chain_, chain_file, indent=4, sort_keys=True)
+            await ctx.send("Chain file:", file=discord.File(chain_file, f"chain.{str(dt.datetime.now().timestamp())}.txt"))
+            chain_file.close()
+
+        if dictionary:
+            dict_file = io.StringIO()
+            json.dump(trans_map_, chain_file, indent=4, sort_keys=True)
+            await ctx.send("Dictionary file:", file=discord.File(chain_file, f"dictionary.{str(dt.datetime.now().timestamp())}.txt"))
+            dict_file.close()
+
+        if all_words:
+            all_words_file = io.StringIO()
+            json.dump(all_words_, all_words_file, indent=4, sort_keys=True)
+            await ctx.send("Dictionary file:", file=discord.File(all_words_file, f"words.{str(dt.datetime.now().timestamp())}.txt"))
+            all_words_file.close()
+
+        if all_text:
+            all_text_file = io.StringIO()
+            json.dump(all_text_, all_text_file, indent=4, sort_keys=True)
+            await ctx.send("Dictionary file:", file=discord.File(all_text_file, f"text.{str(dt.datetime.now().timestamp())}.txt"))
+            all_text_file.close()
+
+
 # BOT COMMANDS
 @commands.cooldown(1, 120, commands.BucketType.user)
 @bot.command(pass_context=True, name='pull_new_messages', description='Pulls all new messages from discord servers not already on database')
 async def pull_new_messages(ctx: commands.Context):
     if (talkbox.CORPUS_LOCK.locked()):
         await ctx.send("I'm occupied right about now.")
-    else:
-        msg: discord.Message = await ctx.send('On it.')
+        return()
 
-        try:
-            async with talkbox.CORPUS_LOCK:
-                try:
-                    messages_all = json.load(open(os.path.join(config.PATH, "DB", "parrot.json")))
-                except json.JSONDecodeError:
-                    messages_all = json.load(open(os.path.join(config.PATH, "DB", "parrot.bkp.json")))
-            last_time = dt.datetime.fromtimestamp(messages_all.pop('last_time'))
-        except FileNotFoundError:
-            messages_all = dict()  # starting from scratch
-            last_time = None
+    msg: discord.Message = await ctx.send('On it.')
 
-        now = dt.datetime.now()
-
-        messages_all['last_time'] = now.timestamp()
-
-        for guild in bot.guilds:
-            if guild.id in config.GildExList:
-                continue
-            for channel in guild.text_channels:
-                if channel.id in config.ChanExList:
-                    continue
-                try:
-                    async for message in asynctqdm(channel.history(limit=None, oldest_first=True, after=last_time, before=now), leave=False):
-                        if message.type == discord.MessageType.default and not (message.author.id in config.UserExLixt):
-                            try:
-                                messages_all[str(guild.id)][str(channel.id)].append(message.content)
-                            except Exception:
-                                try:
-                                    messages_all[str(guild.id)][str(channel.id)] = [message.content]
-                                except Exception:
-                                    messages_all[str(guild.id)] = {str(channel.id): [message.content]}
-                except Exception:
-                    pass  # This usually means that we cant read that channel; oh well, just pass
-
-        await msg.edit(content='Just a sec...')
-
+    try:
         async with talkbox.CORPUS_LOCK:
-            json.dump(messages_all, open(os.path.join(config.PATH, "DB", "parrot.json"),     "w"), indent=4, sort_keys=True)
-            json.dump(messages_all, open(os.path.join(config.PATH, "DB", "parrot.bkp.json"), "w"), indent=4, sort_keys=True)
+            try:
+                messages_all = json.load(open(os.path.join(config.PATH, "DB", "parrot", "parrot.json")))
+            except json.JSONDecodeError:
+                messages_all = json.load(open(os.path.join(config.PATH, "DB", "parrot", "parrot.bkp.json")))
+        last_time = dt.datetime.fromtimestamp(messages_all.pop('last_time'))
+    except FileNotFoundError:
+        messages_all = dict()  # starting from scratch
+        last_time = None
 
-        await msg.edit(content='One last thing...')
+    now = dt.datetime.now()
 
-        await talkbox.reload_dict()
+    messages_all['last_time'] = now.timestamp()
 
-        await msg.edit(content='Synchronization done.')
+    for guild in bot.guilds:
+        if guild.id in config.GildExList:
+            continue
+        for channel in guild.text_channels:
+            if channel.id in config.ChanExList:
+                continue
+            try:
+                async for message in asynctqdm(channel.history(limit=None, oldest_first=True, after=last_time, before=now), leave=False):
+                    if message.type == discord.MessageType.default and not (message.author.id in config.UserExLixt):
+                        try:
+                            messages_all[str(guild.id)][str(channel.id)].append(message.content)
+                        except Exception:
+                            try:
+                                messages_all[str(guild.id)][str(channel.id)] = [message.content]
+                            except Exception:
+                                messages_all[str(guild.id)] = {str(channel.id): [message.content]}
+            except Exception:
+                pass  # This usually means that we cant read that channel; oh well, just pass
+
+    await msg.edit(content='Just a sec...')
+
+    async with talkbox.CORPUS_LOCK:
+        json.dump(messages_all, open(os.path.join(config.PATH, "DB", "parrot", "parrot.json"),     "w"), indent=4, sort_keys=True)
+        json.dump(messages_all, open(os.path.join(config.PATH, "DB", "parrot", "parrot.bkp.json"), "w"), indent=4, sort_keys=True)
+
+    await msg.edit(content='One last thing...')
+
+    await talkbox.reload_dict()
+
+    await msg.edit(content='Synchronization done.')
 
 @commands.cooldown(2, 15, commands.BucketType.user)
 @bot.command(pass_context=True, name='img', description='Search for images online and send the first match')
@@ -98,16 +149,6 @@ async def img(ctx: commands.Context, amount: Optional[int] = 1, *query):
         for x in glob.glob(os.path.join(config.PATH, "DB", "img", "ext", query, "Scrapper_*")):
             await ctx.send(file=discord.File(x))
         rmtree(os.path.join(config.PATH, "DB", "img", "ext", query), ignore_errors=True, onerror=None)
-
-@commands.cooldown(1, 10, commands.BucketType.guild)
-@bot.command(pass_context=True, name='last_file', description='Get last file from upload server.')
-async def last_file(ctx: commands.Context):
-    # TODO: DOCUMENT THIS FUNCTION AND MAKE IT ACTUALLY PORTABLE
-    if os.name == "nt":
-        await ctx.send("Windows bad, Linux good")  # Windows bad, linux good
-    else:
-        nginx_dir = os.path.join(os.sep + "var", "log", "nginx")
-        await ctx.send("Last modification date: " + str(dt.datetime.utcfromtimestamp(os.path.getmtime(os.path.join(nginx_dir, "data.txt"))).strftime("%Y-%m-%d %H:%M:%S") + " by: " + open(os.path.join(nginx_dir, "lastime.infopog")).read()), file=discord.File(os.path.join(nginx_dir, "data.txt")))
 
 @commands.cooldown(2, 30, commands.BucketType.guild)
 @bot.command(pass_context=True, name='ping', description='Checks ping between bot and discord server')
@@ -153,28 +194,28 @@ async def talk(ctx: commands.Context, *base):
 # BOT EVENTS
 @bot.event
 async def on_command_error(context: commands.Context, exception: Exception, *args: list, **kwargs: dict):
-    print(file=sys.stderr)
-    print(f"Ignoring exception in command {context.command}:", file=sys.stderr)
-    traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
+    print()
+    print(f"Ignoring exception in command {context.command}:")
+    traceback.print_exception(type(exception), exception, exception.__traceback__)
 
-    print(f"[message]: {context.message.content}", file=sys.stderr)
+    print(f"[message]: {context.message.content}")
 
     if bool(args):
-        print(f"[args]: {args.__repr__()}", file=sys.stderr)
+        print(f"[args]: {args.__repr__()}")
     if bool(kwargs):
-        print(f"[kwargs]: {kwargs.__repr__()}", file=sys.stderr)
-    print(file=sys.stderr)
+        print(f"[kwargs]: {kwargs.__repr__()}")
+    print()
 
 @bot.event
 async def on_error(event_method, *args: list, **kwargs: dict):
-    print(file=sys.stderr)
-    print(f" Ignoring exception in {event_method}", file=sys.stderr)
+    print()
+    print(f" Ignoring exception in {event_method}")
     traceback.print_exc()
     if args:
-        print(f"[args]: {args.__repr__()}", file=sys.stderr)
+        print(f"[args]: {args.__repr__()}")
     if kwargs:
-        print(f"[kwargs]: {kwargs.__repr__()}", file=sys.stderr)
-    print(file=sys.stderr)
+        print(f"[kwargs]: {kwargs.__repr__()}")
+    print()
 
 @bot.event
 async def on_ready():
