@@ -38,8 +38,8 @@ talkbox = TalkBox(config)
 
 # DEV-LAB ONLY COMMANDS
 # these are for debugging and such
-@bot.commadn(pass_context=True, name='dump_chain', description="DEBUG-ONLY: dumps markov chain and dictionary to a file!")
-async def dump_chain(ctx: discord.Context, chain: bool = True, dictionary: bool = True, all_words: bool = False, all_text: bool = False, single_file: bool = False):
+@bot.command(pass_context=True, name='dump_chain', description="DEBUG-ONLY: dumps markov chain and dictionary to a file!")
+async def dump_chain(ctx: commands.Context, chain: bool = True, dictionary: bool = True, all_words: bool = False, all_text: bool = False, single_file: bool = False):
     async with talkbox.TRANS_LOCK:
         chain_     = deepcopy(talkbox.chain)
         trans_map_ = deepcopy(talkbox.trans_map)
