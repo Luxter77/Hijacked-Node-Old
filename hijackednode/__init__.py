@@ -57,6 +57,8 @@ async def dump_chain(ctx: commands.Context, chain: bool = True, dictionary: bool
 
             json.dump(data, da_file, indent=4, sort_keys=True)
 
+            await ctx.send("All data file:", file=discord.File(da_file, f"all_data.{str(dt.datetime.now().timestamp())}.txt"))
+
             da_file.close()
 
         else:
