@@ -212,7 +212,7 @@ class TalkBox:
             chain = deepcopy(self.chain)
             trans_map = deepcopy(self.trans_map)
 
-        # the ugliest thing you will ever see because I have no idea what am I doing but it seems to make program go fast so here we are
+        # I know all
         # Todo: Actually understand what the heck did I do here
         return(await asyncio.wrap_future(self.TREAD_POOL.submit(gen_text, end_word=end_word, until=until, max_length=max_length, primer=primer, init=init, chain=chain, trans_map=trans_map, pipeline=self.pipeline)))
 
