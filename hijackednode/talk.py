@@ -4,6 +4,7 @@ from random import choice, randint
 from .configuration import CONF0  # pylint: disable=relative-beyond-top-level
 from concurrent.futures import ThreadPoolExecutor
 from emoji import EMOJI_UNICODE_ENGLISH
+from pprint import pformat
 from copy import deepcopy
 from typing import List
 
@@ -18,6 +19,17 @@ class TalkBoxError(Exception):
     ...  # Placeholder lol
 
 # define FPCAMHHPC = "fuck pythonic code, all my homies hate pythonic code - this post was made by the perl gang"
+
+class AnnotatedBool:
+    def __init__(self, obj: object, note: str):
+        self.value = obj
+        self.note  = note
+
+    def __bool__(self):
+        return bool(self.value)
+
+    def __repr__(self):
+        return pformat({'value': self.value, 'note': self.note})
 
 def trans(text: str, ptq: str) -> str:
     if os.name != "nt":  # windows bad linux good
@@ -66,13 +78,14 @@ class TextPipeLine:
             return text
 
     def checks(self, skala: str) -> bool:
-        if ((len(skala) < self.config.SkalaMinStrLen) or ((len(skala.replace(" ", "")) / len(skala.split(" "))) <= self.config.SkalaRatio) or (bool(re.search('[\u0400-\u04FF]', skala)) and self.config.RejectCyrillic) or not(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values()))) or not(set(skala).isdisjoint(set(self.config.WordBanLst)))):
-            return False
-        else:
-            for banned in self.config.PrefBanLst:
-                if skala.startswith(banned):
-                    return False
-        return True
+        return all({
+            'len_check':        AnnotatedBool(obj=not(len(skala) < self.config.SkalaMinStrLen),                                           note=("len(skala) must be greater than: " + str(self.config.SkalaMinStrLen))),
+            'ratio_check':      AnnotatedBool(obj=not((len(skala.replace(" ", "")) / len(skala.split(" "))) <= self.config.SkalaRatio),   note="word-len ratio must be grater than: " + str(self.config.SkalaRatio)),
+            'cyrillic_check':   AnnotatedBool(obj=not(bool(re.search('[\u0400-\u04FF]', skala)) and self.config.RejectCyrillic),          note="must not be in cyrillic or [" + str(self.config.RejectCyrillic)+"]"),
+            'emoji_check':      AnnotatedBool(obj=(set(skala).isdisjoint(set(EMOJI_UNICODE_ENGLISH.values())) or self.config.AllowEmoji), note="must not contain emoji and [" + str(self.config.AllowEmoji) + "]"),
+            'bannedword_check': AnnotatedBool(obj=(set(skala).isdisjoint(set(self.config.WordBanLst))),                                   note="must not contain banned words"),
+            'bannedpref_check': AnnotatedBool(obj=all((not(skala.startswith(pref)) for pref in self.config.PrefBanLst)),                  note="must not start with a banned prefix"),
+        }.values())
 
     async def load_from_discord_dump(self) -> List[str]:
         "It's a bad multilingual pun"
